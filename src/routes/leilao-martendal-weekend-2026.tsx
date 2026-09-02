@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import {
+  trackInternalPageViewOnce,
+  trackInternalWhatsAppClick,
+} from "@/lib/internal-tracking";
+import {
   trackViewContentOnce,
   trackWhatsAppReservation,
 } from "@/lib/meta-pixel";
