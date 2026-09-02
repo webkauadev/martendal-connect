@@ -74,9 +74,9 @@ let viewContentSent = false;
 
 export function trackViewContentOnce(): void {
   if (viewContentSent) return;
-  viewContentSent = true;
   const fbq = getFbq();
   if (!fbq) return;
+  viewContentSent = true;
   fbq("track", "ViewContent", {
     content_name: `${EVENT_NAME} - Reserva de Mesa`,
     content_category: "Reserva de Mesa",
