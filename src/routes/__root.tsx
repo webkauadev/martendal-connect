@@ -74,16 +74,25 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 const META_PIXEL_ID = "1419927983569630";
 
-const metaPixelSnippet = `!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '${META_PIXEL_ID}');
-fbq('track', 'PageView');`;
+// Bootstrap do Meta Pixel dividido em estados independentes:
+// 1) stub do fbq  2) loader real (fbevents.js)  3) init  4) PageView.
+// A existência de window.fbq NUNCA impede o carregamento do loader.
+const META_PIXEL_LOADER = "https://connect.facebook.net/en_US/fbevents.js";
+
+const metaPixelSnippet = `(function(w,d,src,pixelId){
+  if(!w.fbq){
+    var n=w.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    n.queue=[];n.loaded=!0;n.version='2.0';
+    if(!w._fbq)w._fbq=n;
+  }
+  if(!d.querySelector('script[src="'+src+'"]')){
+    var s=d.createElement('script');
+    s.async=!0;s.src=src;s.dataset.martendalMetaPixel='true';
+    (d.head||d.getElementsByTagName('head')[0]).appendChild(s);
+  }
+  if(!w.__martendalMetaInitQueued){w.__martendalMetaInitQueued=!0;w.fbq('init',pixelId);}
+  if(!w.__martendalMetaPageViewQueued){w.__martendalMetaPageViewQueued=!0;w.fbq('track','PageView');}
+})(window,document,'${META_PIXEL_LOADER}','${META_PIXEL_ID}');`;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
