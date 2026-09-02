@@ -14,13 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      martendal_tracking_events: {
+        Row: {
+          ad_id: string | null
+          adset_id: string | null
+          campaign_id: string | null
+          created_at: string
+          device_type: string | null
+          event_type: string
+          id: string
+          landing_path: string | null
+          referrer: string | null
+          session_id: string | null
+          traffic_source: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          ad_id?: string | null
+          adset_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_type: string
+          id?: string
+          landing_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          traffic_source?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          ad_id?: string | null
+          adset_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          landing_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          traffic_source?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_panel_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
