@@ -50,6 +50,7 @@ function SqueezePage() {
 
   useEffect(() => {
     setUtmSource(readUtms().utm_source);
+    ensurePixelBooted();
     trackViewContentOnce();
   }, []);
 
