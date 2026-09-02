@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import {
+  trackInternalPageViewOnce,
+  trackInternalWhatsAppClick,
+} from "@/lib/internal-tracking";
+import {
   trackViewContentOnce,
   trackWhatsAppReservation,
 } from "@/lib/meta-pixel";
@@ -50,6 +54,7 @@ function SqueezePage() {
   useEffect(() => {
     setUtmSource(readUtms().utm_source);
     trackViewContentOnce();
+    trackInternalPageViewOnce();
   }, []);
 
   const href = useMemo(() => buildWhatsAppUrl(utmSource), [utmSource]);
@@ -93,7 +98,10 @@ function SqueezePage() {
             rel="noopener noreferrer"
             className="squeeze-cta"
             aria-label={`Reservar minha mesa pelo WhatsApp com Bárbara Silva (${WHATSAPP_NUMBER})`}
-            onClick={() => trackWhatsAppReservation()}
+            onClick={() => {
+              trackWhatsAppReservation();
+              trackInternalWhatsAppClick();
+            }}
           >
             <WhatsAppIcon />
             <span>Reservar minha mesa</span>

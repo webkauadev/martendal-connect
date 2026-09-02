@@ -10,11 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LeadsPanelRouteImport } from './routes/leads-panel'
 import { Route as LeilaoMartendalWeekend2026RouteImport } from './routes/leilao-martendal-weekend-2026'
+import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeadsPanelRoute = LeadsPanelRouteImport.update({
+  id: '/leads-panel',
+  path: '/leads-panel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeilaoMartendalWeekend2026Route =
@@ -23,31 +30,57 @@ const LeilaoMartendalWeekend2026Route =
     path: '/leilao-martendal-weekend-2026',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
+  id: '/api/public/track',
+  path: '/api/public/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
+  '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
+  '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
+  '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/leilao-martendal-weekend-2026'
+  fullPaths:
+    | '/'
+    | '/leads-panel'
+    | '/leilao-martendal-weekend-2026'
+    | '/api/public/track'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/leilao-martendal-weekend-2026'
-  id: '__root__' | '/' | '/leilao-martendal-weekend-2026'
+  to:
+    | '/'
+    | '/leads-panel'
+    | '/leilao-martendal-weekend-2026'
+    | '/api/public/track'
+  id:
+    | '__root__'
+    | '/'
+    | '/leads-panel'
+    | '/leilao-martendal-weekend-2026'
+    | '/api/public/track'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeadsPanelRoute: typeof LeadsPanelRoute
   LeilaoMartendalWeekend2026Route: typeof LeilaoMartendalWeekend2026Route
+  ApiPublicTrackRoute: typeof ApiPublicTrackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -59,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leads-panel': {
+      id: '/leads-panel'
+      path: '/leads-panel'
+      fullPath: '/leads-panel'
+      preLoaderRoute: typeof LeadsPanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/leilao-martendal-weekend-2026': {
       id: '/leilao-martendal-weekend-2026'
       path: '/leilao-martendal-weekend-2026'
@@ -66,12 +106,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeilaoMartendalWeekend2026RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/track': {
+      id: '/api/public/track'
+      path: '/api/public/track'
+      fullPath: '/api/public/track'
+      preLoaderRoute: typeof ApiPublicTrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeadsPanelRoute: LeadsPanelRoute,
   LeilaoMartendalWeekend2026Route: LeilaoMartendalWeekend2026Route,
+  ApiPublicTrackRoute: ApiPublicTrackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
