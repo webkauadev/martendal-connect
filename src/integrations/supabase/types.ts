@@ -71,6 +71,21 @@ export type Database = {
         }
         Relationships: []
       }
+      panel_admins: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
