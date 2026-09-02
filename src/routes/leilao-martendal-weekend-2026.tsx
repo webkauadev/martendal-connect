@@ -54,6 +54,7 @@ function SqueezePage() {
 
   useEffect(() => {
     setUtmSource(readUtms().utm_source);
+    ensureMetaPixel();
     trackViewContentOnce();
     trackInternalPageViewOnce();
   }, []);
