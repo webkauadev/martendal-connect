@@ -82,9 +82,8 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-if(!window.__martendalPixelBooted){window.__martendalPixelBooted=true;
 fbq('init', '${META_PIXEL_ID}');
-fbq('track', 'PageView');}`;
+fbq('track', 'PageView');`;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -106,7 +105,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "preconnect", href: "https://connect.facebook.net" },
     ],
-    scripts: [{ children: metaPixelSnippet }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -119,6 +117,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: metaPixelSnippet }} />
       </head>
       <body>
         <noscript>
