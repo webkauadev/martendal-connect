@@ -2,7 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
 import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
-import { trackViewContentOnce, trackWhatsAppReservation } from "@/lib/meta-pixel";
+import {
+  ensurePixelBooted,
+  trackViewContentOnce,
+  trackWhatsAppReservation,
+} from "@/lib/meta-pixel";
 import { buildWhatsAppUrl, readUtms, WHATSAPP_NUMBER } from "@/lib/squeeze-config";
 
 export const Route = createFileRoute("/leilao-martendal-weekend-2026")({
