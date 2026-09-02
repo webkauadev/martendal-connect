@@ -76,7 +76,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_panel_admin: { Args: never; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

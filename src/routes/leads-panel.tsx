@@ -99,7 +99,16 @@ function LeadsPanelRoute() {
       return;
     }
     const userEmail = (user.email || "").toLowerCase();
-    if (userEmail !== ALLOWED_EMAIL) {
+    const providers = [
+      (user.app_metadata as { provider?: string } | undefined)?.provider,
+      ...(((user.app_metadata as { providers?: string[] } | undefined)?.providers) ?? []),
+    ].filter(Boolean) as string[];
+    const isGoogle = providers.includes("google");
+    const verified =
+      (user.user_metadata as { email_verified?: boolean | string } | undefined)?.email_verified;
+    const emailVerified = verified === true || verified === "true";
+
+    if (userEmail !== ALLOWED_EMAIL || !isGoogle || !emailVerified) {
       await supabase.auth.signOut();
       setStatus("denied");
       return;
@@ -107,6 +116,7 @@ function LeadsPanelRoute() {
     setEmail(user.email || "");
     setStatus("ok");
   }, []);
+
 
   useEffect(() => {
     void evaluate();
