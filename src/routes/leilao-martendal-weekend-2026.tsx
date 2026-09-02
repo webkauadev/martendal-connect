@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import {
-  ensurePixelBooted,
   trackViewContentOnce,
   trackWhatsAppReservation,
 } from "@/lib/meta-pixel";
@@ -50,7 +49,6 @@ function SqueezePage() {
 
   useEffect(() => {
     setUtmSource(readUtms().utm_source);
-    ensurePixelBooted();
     trackViewContentOnce();
   }, []);
 
