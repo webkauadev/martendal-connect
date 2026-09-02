@@ -98,7 +98,10 @@ function SqueezePage() {
             rel="noopener noreferrer"
             className="squeeze-cta"
             aria-label={`Reservar minha mesa pelo WhatsApp com Bárbara Silva (${WHATSAPP_NUMBER})`}
-            onClick={() => trackWhatsAppReservation()}
+            onClick={() => {
+              trackWhatsAppReservation();
+              trackInternalWhatsAppClick();
+            }}
           >
             <WhatsAppIcon />
             <span>Reservar minha mesa</span>
