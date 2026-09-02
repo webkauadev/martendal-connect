@@ -7,10 +7,8 @@ export const EVENT_DATE = "11 a 13 de setembro";
 export const EVENT_LOCATION = "Vilhena • RO";
 export const CONTACT_NAME = "Bárbara Silva";
 
-// ⚠️ VALIDAR ANTES DE PUBLICAR
 // Formato: 55 + DDD + número (somente dígitos).
-// Número informado na peça: (43) 91463-994 -> 8 dígitos após o DDD.
-// Celulares brasileiros têm 9 dígitos. Confirmar o dígito faltante.
+// Número confirmado pelo cliente: (43) 91463-994.
 export const WHATSAPP_NUMBER = "554391463994";
 
 export const META_PIXEL_ID = "1419927983569630";
