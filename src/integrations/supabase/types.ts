@@ -71,27 +71,12 @@ export type Database = {
         }
         Relationships: []
       }
-      panel_admins: {
-        Row: {
-          created_at: string
-          email: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      is_panel_admin: { Args: never; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
