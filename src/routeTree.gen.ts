@@ -10,33 +10,44 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LeilaoMartendalWeekend2026RouteImport } from './routes/leilao-martendal-weekend-2026'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeilaoMartendalWeekend2026Route =
+  LeilaoMartendalWeekend2026RouteImport.update({
+    id: '/leilao-martendal-weekend-2026',
+    path: '/leilao-martendal-weekend-2026',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/leilao-martendal-weekend-2026'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/leilao-martendal-weekend-2026'
+  id: '__root__' | '/' | '/leilao-martendal-weekend-2026'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeilaoMartendalWeekend2026Route: typeof LeilaoMartendalWeekend2026Route
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +59,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leilao-martendal-weekend-2026': {
+      id: '/leilao-martendal-weekend-2026'
+      path: '/leilao-martendal-weekend-2026'
+      fullPath: '/leilao-martendal-weekend-2026'
+      preLoaderRoute: typeof LeilaoMartendalWeekend2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeilaoMartendalWeekend2026Route: LeilaoMartendalWeekend2026Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
