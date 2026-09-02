@@ -54,6 +54,7 @@ function SqueezePage() {
   useEffect(() => {
     setUtmSource(readUtms().utm_source);
     trackViewContentOnce();
+    trackInternalPageViewOnce();
   }, []);
 
   const href = useMemo(() => buildWhatsAppUrl(utmSource), [utmSource]);
