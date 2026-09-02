@@ -7,6 +7,7 @@ import {
   trackInternalWhatsAppClick,
 } from "@/lib/internal-tracking";
 import {
+  ensureMetaPixel,
   trackViewContentOnce,
   trackWhatsAppReservation,
 } from "@/lib/meta-pixel";
