@@ -7,6 +7,7 @@ import {
   trackInternalWhatsAppClick,
 } from "@/lib/internal-tracking";
 import {
+  ensureMetaPixel,
   trackViewContentOnce,
   trackWhatsAppReservation,
 } from "@/lib/meta-pixel";
@@ -53,6 +54,7 @@ function SqueezePage() {
 
   useEffect(() => {
     setUtmSource(readUtms().utm_source);
+    ensureMetaPixel();
     trackViewContentOnce();
     trackInternalPageViewOnce();
   }, []);
