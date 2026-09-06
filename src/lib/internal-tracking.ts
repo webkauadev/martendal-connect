@@ -33,7 +33,12 @@ type TrackingPayload = {
   lot_number?: string | null;
   horse_name?: string | null;
   video_url?: string | null;
+  catalog_name?: string | null;
 };
+
+const CATALOG_PREFIX = "/catalago/";
+const CATALOG_LABEL = "Quarto de Milha - Martendal Weekend 2026";
+
 
 export type LotContext = {
   lot_number?: string | null;
