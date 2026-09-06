@@ -436,15 +436,36 @@ function Dashboard({ email }: { email: string }) {
     [lotStats],
   );
 
-  const lotOrigin = useMemo(
-    () =>
-      groupBy(
-        catalogRows.filter((r) => r.lot_number),
-        (r) =>
-          `Lote ${r.lot_number} · ${label(r.traffic_source, "Direto / Desconhecido")}`,
-      ).slice(0, 30),
-    [catalogRows],
-  );
+  const lotOrigin = useMemo<GroupStats[]>(() => {
+    const map = new Map<string, { views: number; clicks: number; vs: Set<string>; cs: Set<string> }>();
+    for (const row of catalogRows) {
+      if (!row.lot_number) continue;
+      const key = `Lote ${row.lot_number} · ${label(row.traffic_source, "Direto / Desconhecido")}`;
+      let entry = map.get(key);
+      if (!entry) {
+        entry = { views: 0, clicks: 0, vs: new Set(), cs: new Set() };
+        map.set(key, entry);
+      }
+      const session = row.session_id || row.id;
+      if (row.event_type === "lot_view") {
+        entry.views += 1;
+        entry.vs.add(session);
+      } else if (row.event_type === "lot_whatsapp_click") {
+        entry.clicks += 1;
+        entry.cs.add(session);
+      }
+    }
+    return [...map.entries()]
+      .map(([key, v]) => ({
+        key,
+        views: v.views,
+        uniques: v.vs.size,
+        clicks: v.clicks,
+        rate: v.vs.size ? (v.cs.size / v.vs.size) * 100 : 0,
+      }))
+      .sort((a, b) => b.clicks - a.clicks || b.views - a.views)
+      .slice(0, 30);
+  }, [catalogRows]);
 
   const totals = useMemo(() => {
     const views = filtered.filter((r) => VIEW_EVENTS.has(r.event_type));
