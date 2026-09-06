@@ -19,9 +19,11 @@ export type Database = {
           ad_id: string | null
           adset_id: string | null
           campaign_id: string | null
+          catalog_name: string | null
           created_at: string
           device_type: string | null
           event_type: string
+          experience_type: string | null
           horse_name: string | null
           id: string
           landing_path: string | null
@@ -40,9 +42,11 @@ export type Database = {
           ad_id?: string | null
           adset_id?: string | null
           campaign_id?: string | null
+          catalog_name?: string | null
           created_at?: string
           device_type?: string | null
           event_type: string
+          experience_type?: string | null
           horse_name?: string | null
           id?: string
           landing_path?: string | null
@@ -61,9 +65,11 @@ export type Database = {
           ad_id?: string | null
           adset_id?: string | null
           campaign_id?: string | null
+          catalog_name?: string | null
           created_at?: string
           device_type?: string | null
           event_type?: string
+          experience_type?: string | null
           horse_name?: string | null
           id?: string
           landing_path?: string | null
