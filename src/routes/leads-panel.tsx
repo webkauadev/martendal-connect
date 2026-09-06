@@ -694,10 +694,71 @@ function Dashboard({ email }: { email: string }) {
               value={fEvent}
               onChange={setFEvent}
               placeholder="Tipo de evento"
-              options={["page_view", "whatsapp_click"]}
+              options={[
+                "page_view",
+                "whatsapp_click",
+                "catalog_view",
+                "lot_view",
+                "lot_whatsapp_click",
+                "catalog_whatsapp_click",
+                "catalog_video_click",
+                "pdf_download",
+              ]}
             />
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(
+              [
+                ["all", "Todas as páginas"],
+                ["squeeze", "Squeeze (tráfego pago)"],
+                ["catalog", "Catálogo"],
+              ] as const
+            ).map(([value, text]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFPage(value)}
+                className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition ${
+                  fPage === value
+                    ? "border-[#e0bd45] bg-[#e0bd45]/15 text-[#e0bd45]"
+                    : "border-white/15 text-white/60"
+                }`}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
         </section>
+
+        {/* Visão CATÁLOGO */}
+        <Panel title="Catálogo digital (Quarto de Milha)">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Card title="Acessos ao catálogo" value={String(catalogTotals.views)} />
+            <Card title="Sessões" value={String(catalogTotals.sessions)} />
+            <Card title="Lotes visualizados" value={String(catalogTotals.lotViews)} />
+            <Card title="Interesse em lotes" value={String(catalogTotals.lotClicks)} />
+            <Card title="WhatsApp (botão fixo)" value={String(catalogTotals.globalClicks)} />
+            <Card title="Cliques em vídeos" value={String(catalogTotals.videos)} />
+            <Card title="Abriram o PDF" value={String(catalogTotals.pdfs)} />
+            <Card title="Taxa de contato" value={pct(catalogTotals.rate)} />
+          </div>
+        </Panel>
+
+        <Panel title="Lotes mais visualizados">
+          <LotTable rows={lotsMostViewed} />
+        </Panel>
+
+        <Panel title="Lotes com maior interesse">
+          {lotsMostInterest.length ? (
+            <LotTable rows={lotsMostInterest} />
+          ) : (
+            <p className="text-sm text-white/55">Nenhum interesse registrado neste período.</p>
+          )}
+        </Panel>
+
+        <Panel title="Origem do tráfego por lote">
+          <StatsTable rows={lotOrigin} firstColumn="Lote · Origem" />
+        </Panel>
 
         {loadError ? (
           <p className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
