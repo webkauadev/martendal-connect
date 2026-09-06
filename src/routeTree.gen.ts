@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LeadsPanelRouteImport } from './routes/leads-panel'
 import { Route as LeilaoMartendalWeekend2026RouteImport } from './routes/leilao-martendal-weekend-2026'
+import { Route as CatalagoLeilaoMartendalWeekend2026RouteImport } from './routes/catalago.leilao-martendal-weekend-2026'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 
 const IndexRoute = IndexRouteImport.update({
@@ -30,6 +31,12 @@ const LeilaoMartendalWeekend2026Route =
     path: '/leilao-martendal-weekend-2026',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CatalagoLeilaoMartendalWeekend2026Route =
+  CatalagoLeilaoMartendalWeekend2026RouteImport.update({
+    id: '/catalago/leilao-martendal-weekend-2026',
+    path: '/catalago/leilao-martendal-weekend-2026',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
   id: '/api/public/track',
   path: '/api/public/track',
@@ -40,12 +47,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
+  '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
+  '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRoutesById {
@@ -53,6 +62,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
+  '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
   '/api/public/track': typeof ApiPublicTrackRoute
 }
 export interface FileRouteTypes {
@@ -61,18 +71,21 @@ export interface FileRouteTypes {
     | '/'
     | '/leads-panel'
     | '/leilao-martendal-weekend-2026'
+    | '/catalago/leilao-martendal-weekend-2026'
     | '/api/public/track'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/leads-panel'
     | '/leilao-martendal-weekend-2026'
+    | '/catalago/leilao-martendal-weekend-2026'
     | '/api/public/track'
   id:
     | '__root__'
     | '/'
     | '/leads-panel'
     | '/leilao-martendal-weekend-2026'
+    | '/catalago/leilao-martendal-weekend-2026'
     | '/api/public/track'
   fileRoutesById: FileRoutesById
 }
@@ -80,6 +93,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LeadsPanelRoute: typeof LeadsPanelRoute
   LeilaoMartendalWeekend2026Route: typeof LeilaoMartendalWeekend2026Route
+  CatalagoLeilaoMartendalWeekend2026Route: typeof CatalagoLeilaoMartendalWeekend2026Route
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
 }
 
@@ -106,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeilaoMartendalWeekend2026RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalago/leilao-martendal-weekend-2026': {
+      id: '/catalago/leilao-martendal-weekend-2026'
+      path: '/catalago/leilao-martendal-weekend-2026'
+      fullPath: '/catalago/leilao-martendal-weekend-2026'
+      preLoaderRoute: typeof CatalagoLeilaoMartendalWeekend2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/track': {
       id: '/api/public/track'
       path: '/api/public/track'
@@ -120,6 +141,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LeadsPanelRoute: LeadsPanelRoute,
   LeilaoMartendalWeekend2026Route: LeilaoMartendalWeekend2026Route,
+  CatalagoLeilaoMartendalWeekend2026Route:
+    CatalagoLeilaoMartendalWeekend2026Route,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
 }
 export const routeTree = rootRouteImport

@@ -5,8 +5,18 @@ const SESSION_KEY = "martendal_session_id";
 const PAGE_VIEW_FLAG = "__martendalPageViewSent";
 const ENDPOINT = "/api/public/track";
 
+export type InternalEventType =
+  | "page_view"
+  | "whatsapp_click"
+  | "catalog_view"
+  | "lot_view"
+  | "lot_whatsapp_click"
+  | "catalog_whatsapp_click"
+  | "catalog_video_click"
+  | "pdf_download";
+
 type TrackingPayload = {
-  event_type: "page_view" | "whatsapp_click";
+  event_type: InternalEventType;
   session_id: string;
   utm_source: string | null;
   utm_medium: string | null;
@@ -20,6 +30,15 @@ type TrackingPayload = {
   referrer: string | null;
   landing_path: string;
   device_type: "Mobile" | "Tablet" | "Desktop" | "Unknown";
+  lot_number?: string | null;
+  horse_name?: string | null;
+  video_url?: string | null;
+};
+
+export type LotContext = {
+  lot_number?: string | null;
+  horse_name?: string | null;
+  video_url?: string | null;
 };
 
 function uuid(): string {
@@ -130,4 +149,26 @@ export function trackInternalPageViewOnce(): void {
 export function trackInternalWhatsAppClick(): void {
   const payload = buildPayload("whatsapp_click");
   if (payload) send(payload);
+}
+
+// Camada interna do catálogo: dispara e retorna imediatamente (nunca aguarda rede).
+export function trackInternalEvent(eventType: InternalEventType, context: LotContext = {}): void {
+  const payload = buildPayload(eventType);
+  if (!payload) return;
+  send({
+    ...payload,
+    lot_number: context.lot_number ?? null,
+    horse_name: context.horse_name ?? null,
+    video_url: context.video_url ?? null,
+  });
+}
+
+const lotViewSent = new Set<string>();
+
+export function trackInternalLotViewOnce(lotNumber: string, horseName: string): void {
+  if (typeof window === "undefined") return;
+  const key = `${getSessionId()}:${lotNumber}`;
+  if (lotViewSent.has(key)) return;
+  lotViewSent.add(key);
+  trackInternalEvent("lot_view", { lot_number: lotNumber, horse_name: horseName });
 }

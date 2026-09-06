@@ -1,7 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
-const EVENT_TYPES = ["page_view", "whatsapp_click"] as const;
+const EVENT_TYPES = [
+  "page_view",
+  "whatsapp_click",
+  "catalog_view",
+  "lot_view",
+  "lot_whatsapp_click",
+  "catalog_whatsapp_click",
+  "catalog_video_click",
+  "pdf_download",
+] as const;
 
 function str(value: unknown, max = 300): string | null {
   if (typeof value !== "string") return null;
@@ -51,6 +60,9 @@ export const Route = createFileRoute("/api/public/track")({
             referrer: str(body["referrer"]),
             landing_path: str(body["landing_path"], 200),
             device_type: str(body["device_type"], 20),
+            lot_number: str(body["lot_number"], 20),
+            horse_name: str(body["horse_name"], 120),
+            video_url: str(body["video_url"], 300),
           });
 
           if (error) {

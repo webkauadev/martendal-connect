@@ -18,9 +18,43 @@ import { lovable } from "@/integrations/lovable/index";
 const ALLOWED_EMAIL = "beludokuka321@gmail.com";
 const TZ = "America/Porto_Velho";
 
+const CATALOG_PATH = "/catalago/leilao-martendal-weekend-2026";
+const SQUEEZE_PATH = "/leilao-martendal-weekend-2026";
+
+const EVENT_LABELS: Record<string, string> = {
+  page_view: "Acessou a squeeze",
+  whatsapp_click: "Clicou no WhatsApp",
+  catalog_view: "Acessou o catálogo",
+  lot_view: "Visualizou lote",
+  lot_whatsapp_click: "Interesse no lote",
+  catalog_whatsapp_click: "WhatsApp do catálogo",
+  catalog_video_click: "Abriu o vídeo",
+  pdf_download: "Abriu o PDF",
+};
+
+const VIEW_EVENTS = new Set(["page_view", "catalog_view"]);
+const CLICK_EVENTS = new Set([
+  "whatsapp_click",
+  "catalog_whatsapp_click",
+  "lot_whatsapp_click",
+]);
+
+type EventType =
+  | "page_view"
+  | "whatsapp_click"
+  | "catalog_view"
+  | "lot_view"
+  | "lot_whatsapp_click"
+  | "catalog_whatsapp_click"
+  | "catalog_video_click"
+  | "pdf_download";
+
 type EventRow = {
   id: string;
-  event_type: "page_view" | "whatsapp_click";
+  event_type: EventType;
+  lot_number: string | null;
+  horse_name: string | null;
+  video_url: string | null;
   created_at: string;
   session_id: string | null;
   utm_source: string | null;
@@ -249,10 +283,10 @@ function groupBy(rows: EventRow[], pick: (r: EventRow) => string): GroupStats[] 
       map.set(key, entry);
     }
     const session = row.session_id || row.id;
-    if (row.event_type === "page_view") {
+    if (VIEW_EVENTS.has(row.event_type)) {
       entry.views += 1;
       entry.vs.add(session);
-    } else {
+    } else if (CLICK_EVENTS.has(row.event_type)) {
       entry.clicks += 1;
       entry.cs.add(session);
     }
@@ -279,6 +313,7 @@ function Dashboard({ email }: { email: string }) {
   const [fTerm, setFTerm] = useState("");
   const [fContent, setFContent] = useState("");
   const [fEvent, setFEvent] = useState("");
+  const [fPage, setFPage] = useState<"all" | "squeeze" | "catalog">("all");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -334,13 +369,118 @@ function Dashboard({ email }: { email: string }) {
       if (fTerm && label(r.utm_term, "Sem conjunto identificado") !== fTerm) return false;
       if (fContent && label(r.utm_content, "Sem criativo identificado") !== fContent) return false;
       if (fEvent && r.event_type !== fEvent) return false;
+      if (fPage !== "all") {
+        const path = r.landing_path ?? "";
+        const isCatalog = path.startsWith(CATALOG_PATH);
+        if (fPage === "catalog" && !isCatalog) return false;
+        if (fPage === "squeeze" && (isCatalog || !path.startsWith(SQUEEZE_PATH))) return false;
+      }
       return true;
     });
-  }, [periodRows, fSource, fCampaign, fTerm, fContent, fEvent]);
+  }, [periodRows, fSource, fCampaign, fTerm, fContent, fEvent, fPage]);
+
+  // ---- Visão CATÁLOGO ----
+  const catalogRows = useMemo(
+    () => periodRows.filter((r) => (r.landing_path ?? "").startsWith(CATALOG_PATH)),
+    [periodRows],
+  );
+
+  const catalogTotals = useMemo(() => {
+    const views = catalogRows.filter((r) => r.event_type === "catalog_view");
+    const sessions = new Set(views.map((r) => r.session_id || r.id));
+    const lotViews = catalogRows.filter((r) => r.event_type === "lot_view");
+    const lotClicks = catalogRows.filter((r) => r.event_type === "lot_whatsapp_click");
+    const globalClicks = catalogRows.filter((r) => r.event_type === "catalog_whatsapp_click");
+    const videos = catalogRows.filter((r) => r.event_type === "catalog_video_click");
+    const pdfs = catalogRows.filter((r) => r.event_type === "pdf_download");
+    const clickSessions = new Set(
+      [...lotClicks, ...globalClicks].map((r) => r.session_id || r.id),
+    );
+    return {
+      views: views.length,
+      sessions: sessions.size,
+      lotViews: lotViews.length,
+      lotClicks: lotClicks.length,
+      globalClicks: globalClicks.length,
+      videos: videos.length,
+      pdfs: pdfs.length,
+      rate: sessions.size ? (clickSessions.size / sessions.size) * 100 : 0,
+    };
+  }, [catalogRows]);
+
+  const lotStats = useMemo(() => {
+    const map = new Map<
+      string,
+      { key: string; horse: string; views: number; interest: number; videos: number }
+    >();
+    for (const row of catalogRows) {
+      if (!row.lot_number) continue;
+      let entry = map.get(row.lot_number);
+      if (!entry) {
+        entry = {
+          key: row.lot_number,
+          horse: row.horse_name ?? "—",
+          views: 0,
+          interest: 0,
+          videos: 0,
+        };
+        map.set(row.lot_number, entry);
+      }
+      if (row.horse_name) entry.horse = row.horse_name;
+      if (row.event_type === "lot_view") entry.views += 1;
+      if (row.event_type === "lot_whatsapp_click") entry.interest += 1;
+      if (row.event_type === "catalog_video_click") entry.videos += 1;
+    }
+    return [...map.values()];
+  }, [catalogRows]);
+
+  const lotsMostViewed = useMemo(
+    () => [...lotStats].sort((a, b) => b.views - a.views || b.interest - a.interest).slice(0, 20),
+    [lotStats],
+  );
+  const lotsMostInterest = useMemo(
+    () =>
+      [...lotStats]
+        .filter((l) => l.interest > 0)
+        .sort((a, b) => b.interest - a.interest || b.views - a.views)
+        .slice(0, 20),
+    [lotStats],
+  );
+
+  const lotOrigin = useMemo<GroupStats[]>(() => {
+    const map = new Map<string, { views: number; clicks: number; vs: Set<string>; cs: Set<string> }>();
+    for (const row of catalogRows) {
+      if (!row.lot_number) continue;
+      const key = `Lote ${row.lot_number} · ${label(row.traffic_source, "Direto / Desconhecido")}`;
+      let entry = map.get(key);
+      if (!entry) {
+        entry = { views: 0, clicks: 0, vs: new Set(), cs: new Set() };
+        map.set(key, entry);
+      }
+      const session = row.session_id || row.id;
+      if (row.event_type === "lot_view") {
+        entry.views += 1;
+        entry.vs.add(session);
+      } else if (row.event_type === "lot_whatsapp_click") {
+        entry.clicks += 1;
+        entry.cs.add(session);
+      }
+    }
+    return [...map.entries()]
+      .map(([key, v]) => ({
+        key,
+        views: v.views,
+        uniques: v.vs.size,
+        clicks: v.clicks,
+        rate: v.vs.size ? (v.cs.size / v.vs.size) * 100 : 0,
+      }))
+      .sort((a, b) => b.clicks - a.clicks || b.views - a.views)
+      .slice(0, 30);
+  }, [catalogRows]);
 
   const totals = useMemo(() => {
-    const views = filtered.filter((r) => r.event_type === "page_view");
-    const clicks = filtered.filter((r) => r.event_type === "whatsapp_click");
+    const views = filtered.filter((r) => VIEW_EVENTS.has(r.event_type));
+    const clicks = filtered.filter((r) => CLICK_EVENTS.has(r.event_type));
     const viewSessions = new Set(views.map((r) => r.session_id || r.id));
     const clickSessions = new Set(clicks.map((r) => r.session_id || r.id));
     return {
@@ -383,8 +523,8 @@ function Dashboard({ email }: { email: string }) {
         map.set(key, entry);
       }
       entry.ts = Math.min(entry.ts, new Date(row.created_at).getTime());
-      if (row.event_type === "page_view") entry.acessos += 1;
-      else entry.cliques += 1;
+      if (VIEW_EVENTS.has(row.event_type)) entry.acessos += 1;
+      else if (CLICK_EVENTS.has(row.event_type)) entry.cliques += 1;
     }
     return [...map.values()].sort((a, b) => a.ts - b.ts);
   }, [filtered]);
@@ -439,6 +579,9 @@ function Dashboard({ email }: { email: string }) {
       "ad_id",
       "traffic_source",
       "device_type",
+      "landing_path",
+      "lot_number",
+      "horse_name",
     ] as const;
     const escape = (v: string | null) => `"${(v ?? "").replace(/"/g, '""')}"`;
     const lines = [cols.join(",")];
@@ -565,10 +708,71 @@ function Dashboard({ email }: { email: string }) {
               value={fEvent}
               onChange={setFEvent}
               placeholder="Tipo de evento"
-              options={["page_view", "whatsapp_click"]}
+              options={[
+                "page_view",
+                "whatsapp_click",
+                "catalog_view",
+                "lot_view",
+                "lot_whatsapp_click",
+                "catalog_whatsapp_click",
+                "catalog_video_click",
+                "pdf_download",
+              ]}
             />
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(
+              [
+                ["all", "Todas as páginas"],
+                ["squeeze", "Squeeze (tráfego pago)"],
+                ["catalog", "Catálogo"],
+              ] as const
+            ).map(([value, text]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFPage(value)}
+                className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition ${
+                  fPage === value
+                    ? "border-[#e0bd45] bg-[#e0bd45]/15 text-[#e0bd45]"
+                    : "border-white/15 text-white/60"
+                }`}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
         </section>
+
+        {/* Visão CATÁLOGO */}
+        <Panel title="Catálogo digital (Quarto de Milha)">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Card title="Acessos ao catálogo" value={String(catalogTotals.views)} />
+            <Card title="Sessões" value={String(catalogTotals.sessions)} />
+            <Card title="Lotes visualizados" value={String(catalogTotals.lotViews)} />
+            <Card title="Interesse em lotes" value={String(catalogTotals.lotClicks)} />
+            <Card title="WhatsApp (botão fixo)" value={String(catalogTotals.globalClicks)} />
+            <Card title="Cliques em vídeos" value={String(catalogTotals.videos)} />
+            <Card title="Abriram o PDF" value={String(catalogTotals.pdfs)} />
+            <Card title="Taxa de contato" value={pct(catalogTotals.rate)} />
+          </div>
+        </Panel>
+
+        <Panel title="Lotes mais visualizados">
+          <LotTable rows={lotsMostViewed} />
+        </Panel>
+
+        <Panel title="Lotes com maior interesse">
+          {lotsMostInterest.length ? (
+            <LotTable rows={lotsMostInterest} />
+          ) : (
+            <p className="text-sm text-white/55">Nenhum interesse registrado neste período.</p>
+          )}
+        </Panel>
+
+        <Panel title="Origem do tráfego por lote">
+          <StatsTable rows={lotOrigin} firstColumn="Lote · Origem" />
+        </Panel>
 
         {loadError ? (
           <p className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
@@ -685,11 +889,16 @@ function Dashboard({ email }: { email: string }) {
                     <td className="py-2 pr-3">{label(row.utm_content, "—")}</td>
                     <td className="py-2 pr-3">{label(row.device_type, "—")}</td>
                     <td className="py-2 whitespace-nowrap font-semibold">
-                      {row.event_type === "whatsapp_click" ? (
-                        <span className="text-[#3ddc84]">Clicou no WhatsApp</span>
-                      ) : (
-                        <span className="text-white/60">Acessou</span>
-                      )}
+                      <span
+                        className={
+                          CLICK_EVENTS.has(row.event_type) ? "text-[#3ddc84]" : "text-white/60"
+                        }
+                      >
+                        {EVENT_LABELS[row.event_type]}
+                        {row.lot_number
+                          ? ` · ${row.lot_number === "-100" ? "Coberturas" : `Lote ${row.lot_number}`}`
+                          : ""}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -781,6 +990,42 @@ function StatsTable({ rows, firstColumn }: { rows: GroupStats[]; firstColumn: st
               <td className="py-2 pr-3">{row.uniques}</td>
               <td className="py-2 pr-3 font-semibold text-[#3ddc84]">{row.clicks}</td>
               <td className="py-2">{pct(row.rate)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function LotTable({
+  rows,
+}: {
+  rows: { key: string; horse: string; views: number; interest: number; videos: number }[];
+}) {
+  if (!rows.length) return <p className="text-sm text-white/55">Sem dados neste período.</p>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[560px] text-left text-sm">
+        <thead className="text-xs uppercase tracking-wide text-white/45">
+          <tr>
+            <th className="py-2 pr-3">Lote</th>
+            <th className="py-2 pr-3">Animal</th>
+            <th className="py-2 pr-3">Visualizações</th>
+            <th className="py-2 pr-3">Interesse</th>
+            <th className="py-2">Vídeo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key} className="border-t border-white/8 text-white/80">
+              <td className="py-2 pr-3 font-semibold whitespace-nowrap">
+                {row.key === "-100" ? "Coberturas" : `Lote ${row.key}`}
+              </td>
+              <td className="py-2 pr-3">{row.horse}</td>
+              <td className="py-2 pr-3">{row.views}</td>
+              <td className="py-2 pr-3 font-semibold text-[#3ddc84]">{row.interest}</td>
+              <td className="py-2">{row.videos}</td>
             </tr>
           ))}
         </tbody>

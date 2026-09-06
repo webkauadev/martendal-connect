@@ -22,8 +22,10 @@ export type Database = {
           created_at: string
           device_type: string | null
           event_type: string
+          horse_name: string | null
           id: string
           landing_path: string | null
+          lot_number: string | null
           referrer: string | null
           session_id: string | null
           traffic_source: string | null
@@ -32,6 +34,7 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          video_url: string | null
         }
         Insert: {
           ad_id?: string | null
@@ -40,8 +43,10 @@ export type Database = {
           created_at?: string
           device_type?: string | null
           event_type: string
+          horse_name?: string | null
           id?: string
           landing_path?: string | null
+          lot_number?: string | null
           referrer?: string | null
           session_id?: string | null
           traffic_source?: string | null
@@ -50,6 +55,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          video_url?: string | null
         }
         Update: {
           ad_id?: string | null
@@ -58,8 +64,10 @@ export type Database = {
           created_at?: string
           device_type?: string | null
           event_type?: string
+          horse_name?: string | null
           id?: string
           landing_path?: string | null
+          lot_number?: string | null
           referrer?: string | null
           session_id?: string | null
           traffic_source?: string | null
@@ -68,6 +76,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
