@@ -21,6 +21,17 @@ const TZ = "America/Porto_Velho";
 const CATALOG_PATH = "/catalago/leilao-martendal-weekend-2026";
 const SQUEEZE_PATH = "/leilao-martendal-weekend-2026";
 
+const EVENT_LABELS: Record<string, string> = {
+  page_view: "Acessou a squeeze",
+  whatsapp_click: "Clicou no WhatsApp",
+  catalog_view: "Acessou o catálogo",
+  lot_view: "Visualizou lote",
+  lot_whatsapp_click: "Interesse no lote",
+  catalog_whatsapp_click: "WhatsApp do catálogo",
+  catalog_video_click: "Abriu o vídeo",
+  pdf_download: "Abriu o PDF",
+};
+
 const VIEW_EVENTS = new Set(["page_view", "catalog_view"]);
 const CLICK_EVENTS = new Set([
   "whatsapp_click",
