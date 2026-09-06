@@ -210,7 +210,7 @@ function LoginScreen({ denied }: { denied: boolean }) {
       },
     });
     if (oauthError) {
-      setError("Não foi possível iniciar o login com o Google.");
+      setError(`Não foi possível iniciar o login com o Google. ${oauthError.message}`);
       setBusy(false);
       return;
     }
