@@ -13,7 +13,7 @@ import {
 
 import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+
 
 const ALLOWED_EMAIL = "beludokuka321@gmail.com";
 const TZ = "America/Porto_Velho";
@@ -202,18 +202,21 @@ function LoginScreen({ denied }: { denied: boolean }) {
   async function signIn() {
     setBusy(true);
     setError(null);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/leads-panel`,
-      extraParams: { prompt: "select_account" },
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/leads-panel`,
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (result.error) {
+    if (oauthError) {
       setError("Não foi possível iniciar o login com o Google.");
       setBusy(false);
       return;
     }
-    if (result.redirected) return;
-    window.location.replace("/leads-panel");
+    // Redirecionamento para o Google é feito pelo Supabase.
   }
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#050706] px-5 py-10">
