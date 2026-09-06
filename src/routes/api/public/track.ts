@@ -60,6 +60,8 @@ export const Route = createFileRoute("/api/public/track")({
             referrer: str(body["referrer"]),
             landing_path: str(body["landing_path"], 200),
             device_type: str(body["device_type"], 20),
+            catalog_name: str(body["catalog_name"], 120),
+
             lot_number: str(body["lot_number"], 20),
             horse_name: str(body["horse_name"], 120),
             video_url: str(body["video_url"], 300),

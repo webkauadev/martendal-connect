@@ -33,7 +33,12 @@ type TrackingPayload = {
   lot_number?: string | null;
   horse_name?: string | null;
   video_url?: string | null;
+  catalog_name?: string | null;
 };
+
+const CATALOG_PREFIX = "/catalago/";
+const CATALOG_LABEL = "Quarto de Milha - Martendal Weekend 2026";
+
 
 export type LotContext = {
   lot_number?: string | null;
@@ -96,6 +101,7 @@ function buildPayload(eventType: TrackingPayload["event_type"]): TrackingPayload
   };
   const referrer = document.referrer ? document.referrer.slice(0, 300) : null;
   const utmSource = get("utm_source");
+  const path = window.location.pathname.slice(0, 200);
 
   return {
     event_type: eventType,
@@ -110,9 +116,11 @@ function buildPayload(eventType: TrackingPayload["event_type"]): TrackingPayload
     ad_id: get("ad_id"),
     traffic_source: normalizeSource(utmSource, referrer),
     referrer,
-    landing_path: window.location.pathname.slice(0, 200),
+    landing_path: path,
     device_type: detectDevice(),
+    catalog_name: path.startsWith(CATALOG_PREFIX) ? CATALOG_LABEL : null,
   };
+
 }
 
 function send(payload: TrackingPayload): void {
