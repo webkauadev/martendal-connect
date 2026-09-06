@@ -878,11 +878,16 @@ function Dashboard({ email }: { email: string }) {
                     <td className="py-2 pr-3">{label(row.utm_content, "—")}</td>
                     <td className="py-2 pr-3">{label(row.device_type, "—")}</td>
                     <td className="py-2 whitespace-nowrap font-semibold">
-                      {row.event_type === "whatsapp_click" ? (
-                        <span className="text-[#3ddc84]">Clicou no WhatsApp</span>
-                      ) : (
-                        <span className="text-white/60">Acessou</span>
-                      )}
+                      <span
+                        className={
+                          CLICK_EVENTS.has(row.event_type) ? "text-[#3ddc84]" : "text-white/60"
+                        }
+                      >
+                        {EVENT_LABELS[row.event_type]}
+                        {row.lot_number
+                          ? ` · ${row.lot_number === "-100" ? "Coberturas" : `Lote ${row.lot_number}`}`
+                          : ""}
+                      </span>
                     </td>
                   </tr>
                 ))}
