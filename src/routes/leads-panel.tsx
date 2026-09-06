@@ -358,9 +358,93 @@ function Dashboard({ email }: { email: string }) {
       if (fTerm && label(r.utm_term, "Sem conjunto identificado") !== fTerm) return false;
       if (fContent && label(r.utm_content, "Sem criativo identificado") !== fContent) return false;
       if (fEvent && r.event_type !== fEvent) return false;
+      if (fPage !== "all") {
+        const path = r.landing_path ?? "";
+        const isCatalog = path.startsWith(CATALOG_PATH);
+        if (fPage === "catalog" && !isCatalog) return false;
+        if (fPage === "squeeze" && (isCatalog || !path.startsWith(SQUEEZE_PATH))) return false;
+      }
       return true;
     });
-  }, [periodRows, fSource, fCampaign, fTerm, fContent, fEvent]);
+  }, [periodRows, fSource, fCampaign, fTerm, fContent, fEvent, fPage]);
+
+  // ---- Visão CATÁLOGO ----
+  const catalogRows = useMemo(
+    () => periodRows.filter((r) => (r.landing_path ?? "").startsWith(CATALOG_PATH)),
+    [periodRows],
+  );
+
+  const catalogTotals = useMemo(() => {
+    const views = catalogRows.filter((r) => r.event_type === "catalog_view");
+    const sessions = new Set(views.map((r) => r.session_id || r.id));
+    const lotViews = catalogRows.filter((r) => r.event_type === "lot_view");
+    const lotClicks = catalogRows.filter((r) => r.event_type === "lot_whatsapp_click");
+    const globalClicks = catalogRows.filter((r) => r.event_type === "catalog_whatsapp_click");
+    const videos = catalogRows.filter((r) => r.event_type === "catalog_video_click");
+    const pdfs = catalogRows.filter((r) => r.event_type === "pdf_download");
+    const clickSessions = new Set(
+      [...lotClicks, ...globalClicks].map((r) => r.session_id || r.id),
+    );
+    return {
+      views: views.length,
+      sessions: sessions.size,
+      lotViews: lotViews.length,
+      lotClicks: lotClicks.length,
+      globalClicks: globalClicks.length,
+      videos: videos.length,
+      pdfs: pdfs.length,
+      rate: sessions.size ? (clickSessions.size / sessions.size) * 100 : 0,
+    };
+  }, [catalogRows]);
+
+  const lotStats = useMemo(() => {
+    const map = new Map<
+      string,
+      { key: string; horse: string; views: number; interest: number; videos: number }
+    >();
+    for (const row of catalogRows) {
+      if (!row.lot_number) continue;
+      let entry = map.get(row.lot_number);
+      if (!entry) {
+        entry = {
+          key: row.lot_number,
+          horse: row.horse_name ?? "—",
+          views: 0,
+          interest: 0,
+          videos: 0,
+        };
+        map.set(row.lot_number, entry);
+      }
+      if (row.horse_name) entry.horse = row.horse_name;
+      if (row.event_type === "lot_view") entry.views += 1;
+      if (row.event_type === "lot_whatsapp_click") entry.interest += 1;
+      if (row.event_type === "catalog_video_click") entry.videos += 1;
+    }
+    return [...map.values()];
+  }, [catalogRows]);
+
+  const lotsMostViewed = useMemo(
+    () => [...lotStats].sort((a, b) => b.views - a.views || b.interest - a.interest).slice(0, 20),
+    [lotStats],
+  );
+  const lotsMostInterest = useMemo(
+    () =>
+      [...lotStats]
+        .filter((l) => l.interest > 0)
+        .sort((a, b) => b.interest - a.interest || b.views - a.views)
+        .slice(0, 20),
+    [lotStats],
+  );
+
+  const lotOrigin = useMemo(
+    () =>
+      groupBy(
+        catalogRows.filter((r) => r.lot_number),
+        (r) =>
+          `Lote ${r.lot_number} · ${label(r.traffic_source, "Direto / Desconhecido")}`,
+      ).slice(0, 30),
+    [catalogRows],
+  );
 
   const totals = useMemo(() => {
     const views = filtered.filter((r) => VIEW_EVENTS.has(r.event_type));
