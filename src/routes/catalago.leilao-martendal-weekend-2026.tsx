@@ -292,7 +292,9 @@ function CatalogPage() {
           <WhatsAppIcon />
           <span>
             {current
-              ? `Falar sobre o ${lotLabel(current as CatalogLot).toUpperCase()}`
+              ? current.lotNumber === "-100"
+                ? "Falar sobre as coberturas"
+                : `Falar sobre o lote ${current.lotNumber}`
               : "Falar com Bárbara"}
           </span>
         </a>
