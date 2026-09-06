@@ -18,9 +18,32 @@ import { lovable } from "@/integrations/lovable/index";
 const ALLOWED_EMAIL = "beludokuka321@gmail.com";
 const TZ = "America/Porto_Velho";
 
+const CATALOG_PATH = "/catalago/leilao-martendal-weekend-2026";
+const SQUEEZE_PATH = "/leilao-martendal-weekend-2026";
+
+const VIEW_EVENTS = new Set(["page_view", "catalog_view"]);
+const CLICK_EVENTS = new Set([
+  "whatsapp_click",
+  "catalog_whatsapp_click",
+  "lot_whatsapp_click",
+]);
+
+type EventType =
+  | "page_view"
+  | "whatsapp_click"
+  | "catalog_view"
+  | "lot_view"
+  | "lot_whatsapp_click"
+  | "catalog_whatsapp_click"
+  | "catalog_video_click"
+  | "pdf_download";
+
 type EventRow = {
   id: string;
-  event_type: "page_view" | "whatsapp_click";
+  event_type: EventType;
+  lot_number: string | null;
+  horse_name: string | null;
+  video_url: string | null;
   created_at: string;
   session_id: string | null;
   utm_source: string | null;
