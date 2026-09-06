@@ -19,7 +19,6 @@ const ALLOWED_EMAIL = "beludokuka321@gmail.com";
 const TZ = "America/Porto_Velho";
 
 const CATALOG_PREFIX = "/catalago/";
-const SQUEEZE_PATH = "/leilao-martendal-weekend-2026";
 
 const EVENT_LABELS: Record<string, string> = {
   page_view: "Acessou a squeeze",
