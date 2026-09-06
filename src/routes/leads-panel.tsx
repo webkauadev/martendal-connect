@@ -302,6 +302,7 @@ function Dashboard({ email }: { email: string }) {
   const [fTerm, setFTerm] = useState("");
   const [fContent, setFContent] = useState("");
   const [fEvent, setFEvent] = useState("");
+  const [fPage, setFPage] = useState<"all" | "squeeze" | "catalog">("all");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
