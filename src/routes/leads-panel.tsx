@@ -568,6 +568,9 @@ function Dashboard({ email }: { email: string }) {
       "ad_id",
       "traffic_source",
       "device_type",
+      "landing_path",
+      "lot_number",
+      "horse_name",
     ] as const;
     const escape = (v: string | null) => `"${(v ?? "").replace(/"/g, '""')}"`;
     const lines = [cols.join(",")];
@@ -971,6 +974,42 @@ function StatsTable({ rows, firstColumn }: { rows: GroupStats[]; firstColumn: st
               <td className="py-2 pr-3">{row.uniques}</td>
               <td className="py-2 pr-3 font-semibold text-[#3ddc84]">{row.clicks}</td>
               <td className="py-2">{pct(row.rate)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function LotTable({
+  rows,
+}: {
+  rows: { key: string; horse: string; views: number; interest: number; videos: number }[];
+}) {
+  if (!rows.length) return <p className="text-sm text-white/55">Sem dados neste período.</p>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[560px] text-left text-sm">
+        <thead className="text-xs uppercase tracking-wide text-white/45">
+          <tr>
+            <th className="py-2 pr-3">Lote</th>
+            <th className="py-2 pr-3">Animal</th>
+            <th className="py-2 pr-3">Visualizações</th>
+            <th className="py-2 pr-3">Interesse</th>
+            <th className="py-2">Vídeo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key} className="border-t border-white/8 text-white/80">
+              <td className="py-2 pr-3 font-semibold whitespace-nowrap">
+                {row.key === "-100" ? "Coberturas" : `Lote ${row.key}`}
+              </td>
+              <td className="py-2 pr-3">{row.horse}</td>
+              <td className="py-2 pr-3">{row.views}</td>
+              <td className="py-2 pr-3 font-semibold text-[#3ddc84]">{row.interest}</td>
+              <td className="py-2">{row.videos}</td>
             </tr>
           ))}
         </tbody>
