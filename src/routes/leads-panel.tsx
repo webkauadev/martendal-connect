@@ -362,8 +362,8 @@ function Dashboard({ email }: { email: string }) {
   }, [periodRows, fSource, fCampaign, fTerm, fContent, fEvent]);
 
   const totals = useMemo(() => {
-    const views = filtered.filter((r) => r.event_type === "page_view");
-    const clicks = filtered.filter((r) => r.event_type === "whatsapp_click");
+    const views = filtered.filter((r) => VIEW_EVENTS.has(r.event_type));
+    const clicks = filtered.filter((r) => CLICK_EVENTS.has(r.event_type));
     const viewSessions = new Set(views.map((r) => r.session_id || r.id));
     const clickSessions = new Set(clicks.map((r) => r.session_id || r.id));
     return {
