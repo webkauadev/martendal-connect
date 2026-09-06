@@ -272,10 +272,10 @@ function groupBy(rows: EventRow[], pick: (r: EventRow) => string): GroupStats[] 
       map.set(key, entry);
     }
     const session = row.session_id || row.id;
-    if (row.event_type === "page_view") {
+    if (VIEW_EVENTS.has(row.event_type)) {
       entry.views += 1;
       entry.vs.add(session);
-    } else {
+    } else if (CLICK_EVENTS.has(row.event_type)) {
       entry.clicks += 1;
       entry.cs.add(session);
     }
