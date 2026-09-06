@@ -406,8 +406,8 @@ function Dashboard({ email }: { email: string }) {
         map.set(key, entry);
       }
       entry.ts = Math.min(entry.ts, new Date(row.created_at).getTime());
-      if (row.event_type === "page_view") entry.acessos += 1;
-      else entry.cliques += 1;
+      if (VIEW_EVENTS.has(row.event_type)) entry.acessos += 1;
+      else if (CLICK_EVENTS.has(row.event_type)) entry.cliques += 1;
     }
     return [...map.values()].sort((a, b) => a.ts - b.ts);
   }, [filtered]);
