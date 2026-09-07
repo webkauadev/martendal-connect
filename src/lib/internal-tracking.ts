@@ -3,6 +3,7 @@
 
 const SESSION_KEY = "martendal_session_id";
 const PAGE_VIEW_FLAG = "__martendalPageViewSent";
+const LOT_VIEW_KEY_PREFIX = "martendal_lot_view_sent:";
 const ENDPOINT = "/api/public/track";
 
 export type InternalEventType =
@@ -38,7 +39,6 @@ type TrackingPayload = {
 
 const CATALOG_PREFIX = "/catalago/";
 const CATALOG_LABEL = "Quarto de Milha - Martendal Weekend 2026";
-
 
 export type LotContext = {
   lot_number?: string | null;
@@ -120,7 +120,6 @@ function buildPayload(eventType: TrackingPayload["event_type"]): TrackingPayload
     device_type: detectDevice(),
     catalog_name: path.startsWith(CATALOG_PREFIX) ? CATALOG_LABEL : null,
   };
-
 }
 
 function send(payload: TrackingPayload): void {
@@ -175,8 +174,22 @@ const lotViewSent = new Set<string>();
 
 export function trackInternalLotViewOnce(lotNumber: string, horseName: string): void {
   if (typeof window === "undefined") return;
-  const key = `${getSessionId()}:${lotNumber}`;
-  if (lotViewSent.has(key)) return;
-  lotViewSent.add(key);
+
+  const sessionId = getSessionId();
+  const memoryKey = `${sessionId}:${lotNumber}`;
+  if (lotViewSent.has(memoryKey)) return;
+
+  try {
+    const storageKey = `${LOT_VIEW_KEY_PREFIX}${lotNumber}`;
+    if (window.sessionStorage.getItem(storageKey) === sessionId) {
+      lotViewSent.add(memoryKey);
+      return;
+    }
+    window.sessionStorage.setItem(storageKey, sessionId);
+  } catch {
+    /* fallback para deduplicação em memória */
+  }
+
+  lotViewSent.add(memoryKey);
   trackInternalEvent("lot_view", { lot_number: lotNumber, horse_name: horseName });
 }
