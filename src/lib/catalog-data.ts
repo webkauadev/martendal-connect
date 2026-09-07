@@ -2,7 +2,6 @@
 // Extraídos do PDF oficial. As páginas são as próprias imagens renderizadas do PDF,
 // usadas apenas para navegação, tracking e mensagens de WhatsApp.
 
-
 export type CatalogLot = {
   lotNumber: string;
   horseName: string;
@@ -15,10 +14,6 @@ export const CATALOG_NAME = "Quarto de Milha - Martendal Weekend 2026";
 export const CATALOG_PATH = "/catalago/leilao-martendal-weekend-2026";
 export const CATALOG_COVER = "/catalogo/p01.webp";
 export const CATALOG_OG_IMAGE = "/catalogo/og.webp";
-// PDF oficial (~50 MB): fica hospedado fora do repositório (limite de arquivo do Git),
-// servido por URL absoluta, portanto funciona igual na Vercel.
-export const CATALOG_PDF_URL =
-  "https://martendal-connect.lovable.app/__l5e/assets-v1/1dc69a60-a882-4818-9854-06a0912cee5f/martendal-weekend-2026-catalogo-quarto-de-milha.pdf";
 export const PAGE_WIDTH = 1400;
 export const PAGE_HEIGHT = 2489;
 
