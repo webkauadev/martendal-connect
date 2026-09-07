@@ -13,6 +13,8 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 
+const LOGO_URL = "/martendal-logo.jpg";
+
 
 
 const ALLOWED_EMAIL = "beludokuka321@gmail.com";
