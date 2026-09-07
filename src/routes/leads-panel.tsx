@@ -141,47 +141,19 @@ function sid(row: EventRow): string {
 }
 
 // ------------------------------------------------------------------
-// Auth gate (inalterado)
+// Auth gate — chave administrativa própria (sem OAuth)
 // ------------------------------------------------------------------
 
 function LeadsPanelRoute() {
-  const [status, setStatus] = useState<"loading" | "anon" | "denied" | "ok">("loading");
-  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"loading" | "anon" | "ok">("loading");
 
   const evaluate = useCallback(async () => {
-    const { data } = await supabase.auth.getUser();
-    const user = data.user;
-    if (!user) {
-      setStatus("anon");
-      return;
-    }
-    const userEmail = (user.email || "").toLowerCase();
-    const providers = [
-      (user.app_metadata as { provider?: string } | undefined)?.provider,
-      ...(((user.app_metadata as { providers?: string[] } | undefined)?.providers) ?? []),
-    ].filter(Boolean) as string[];
-    const isGoogle = providers.includes("google");
-    const verified =
-      (user.user_metadata as { email_verified?: boolean | string } | undefined)?.email_verified;
-    const emailVerified = verified === true || verified === "true";
-
-    if (userEmail !== ALLOWED_EMAIL || !isGoogle || !emailVerified) {
-      await supabase.auth.signOut();
-      setStatus("denied");
-      return;
-    }
-    setEmail(user.email || "");
-    setStatus("ok");
+    const valid = await panelSessionValid();
+    setStatus(valid ? "ok" : "anon");
   }, []);
 
   useEffect(() => {
     void evaluate();
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        void evaluate();
-      }
-    });
-    return () => sub.subscription.unsubscribe();
   }, [evaluate]);
 
   if (status === "loading") {
@@ -192,37 +164,34 @@ function LeadsPanelRoute() {
     );
   }
 
-  if (status === "ok") return <Dashboard email={email} />;
+  if (status === "ok") return <Dashboard email={PANEL_EMAIL} onSignedOut={() => setStatus("anon")} />;
 
-  return <LoginScreen denied={status === "denied"} />;
+  return <LoginScreen onSignedIn={() => setStatus("ok")} />;
 }
 
-function LoginScreen({ denied }: { denied: boolean }) {
+function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
+  const [secret, setSecret] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function signIn() {
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
     setBusy(true);
     setError(null);
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/leads-panel`,
-        queryParams: { prompt: "select_account" },
-      },
-    });
-    if (oauthError) {
-      setError(`Não foi possível iniciar o login com o Google. ${oauthError.message}`);
+    const result = await panelLogin(secret);
+    if (!result.ok) {
+      setError(result.error ?? "Chave inválida.");
       setBusy(false);
       return;
     }
+    setSecret("");
+    setBusy(false);
+    onSignedIn();
   }
-
-
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#050706] px-5 py-10">
-      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0B100D] p-8 text-center shadow-2xl">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0B100D] p-8 shadow-2xl">
         <img
           src={LOGO_URL}
           alt="Pecuária Martendal"
@@ -230,46 +199,59 @@ function LoginScreen({ denied }: { denied: boolean }) {
           height={84}
           className="mx-auto h-20 w-auto"
         />
-        <h1 className="mt-5 text-xl font-bold text-white">Painel Martendal</h1>
-        <p className="mt-1 text-sm text-white/55">Acesso administrativo</p>
+        <h1 className="mt-5 text-center text-xl font-bold text-white">Painel Martendal</h1>
+        <p className="mt-1 text-center text-sm text-white/55">Acesso administrativo</p>
 
-        {denied ? (
-          <p className="mt-5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-300">
-            Acesso não autorizado.
-          </p>
-        ) : null}
-        {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
+        <form onSubmit={submit} className="mt-7 space-y-4 text-left">
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wide text-white/50">
+              E-mail
+            </label>
+            <input
+              type="email"
+              value={ALLOWED_EMAIL}
+              readOnly
+              disabled
+              className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/60"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="panel-secret"
+              className="text-xs font-semibold uppercase tracking-wide text-white/50"
+            >
+              Chave de acesso
+            </label>
+            <input
+              id="panel-secret"
+              type="password"
+              autoComplete="current-password"
+              value={secret}
+              onChange={(e) => setSecret(e.target.value)}
+              required
+              className="mt-1 w-full rounded-xl border border-white/10 bg-[#050706] px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
+            />
+          </div>
 
-        <button
-          type="button"
-          onClick={() => void signIn()}
-          disabled={busy}
-          className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold uppercase tracking-wide text-[#0B100D] transition hover:bg-white/90 disabled:opacity-60"
-        >
-          <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
-            <path
-              fill="#EA4335"
-              d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2.5 24 .5 14.6.5 6.5 5.8 2.6 13.5l7.8 6.1C12.3 13.6 17.6 9.5 24 9.5z"
-            />
-            <path
-              fill="#4285F4"
-              d="M46.5 24c0-1.6-.1-2.8-.4-4.1H24v8.3h12.7c-.3 2.1-1.6 5.2-4.6 7.3l7.6 5.9c4.5-4.2 6.8-10.3 6.8-17.4z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M10.4 28.4A14.6 14.6 0 0 1 9.6 24c0-1.5.3-3 .8-4.4l-7.8-6.1A23.9 23.9 0 0 0 .5 24c0 3.8.9 7.4 2.1 10.5l7.8-6.1z"
-            />
-            <path
-              fill="#34A853"
-              d="M24 47.5c6.2 0 11.5-2 15.7-5.6l-7.6-5.9c-2 1.4-4.7 2.4-8.1 2.4-6.4 0-11.7-4.1-13.6-9.9l-7.8 6.1C6.5 42.2 14.6 47.5 24 47.5z"
-            />
-          </svg>
-          Continuar com Google
-        </button>
+          {error ? (
+            <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-300">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={busy || !secret}
+            className="mt-2 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold uppercase tracking-wide text-[#0B100D] transition hover:bg-white/90 disabled:opacity-60"
+          >
+            {busy ? "Entrando…" : "Entrar"}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
+
 
 // ------------------------------------------------------------------
 // Dashboard
