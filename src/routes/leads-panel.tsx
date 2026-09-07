@@ -393,12 +393,7 @@ function groupCatalogBy(rows: EventRow[], pick: (r: EventRow) => string): Catalo
     .sort((a, b) => b.clicks - a.clicks || b.sessions - a.sessions);
 }
 
-const SELECT_COLUMNS =
-  "id,event_type,created_at,session_id,utm_source,utm_medium,utm_campaign,utm_content,utm_term," +
-  "campaign_id,adset_id,ad_id,traffic_source,referrer,landing_path,device_type," +
-  "lot_number,horse_name,video_url,catalog_name,experience_type";
-
-function Dashboard({ email }: { email: string }) {
+function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => void }) {
   const [rows, setRows] = useState<EventRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [period, setPeriod] = useState<Period>("all");
@@ -418,21 +413,25 @@ function Dashboard({ email }: { email: string }) {
   const [page, setPage] = useState(0);
   const [openLot, setOpenLot] = useState<string | null>(null);
   const [timelineSession, setTimelineSession] = useState<string | null>(null);
+  const [showSecretForm, setShowSecretForm] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("martendal_tracking_events")
-      .select(SELECT_COLUMNS)
-      .order("created_at", { ascending: false })
-      .limit(20000);
+    const token = getPanelToken();
+    if (!token) {
+      setLoading(false);
+      onSignedOut();
+      return;
+    }
+    const { data, error } = await supabase.rpc("panel_get_tracking_events", { p_token: token });
     if (error) setLoadError(error.message);
     else {
       setLoadError(null);
       setRows((data ?? []) as unknown as EventRow[]);
     }
     setLoading(false);
-  }, []);
+  }, [onSignedOut]);
+
 
   useEffect(() => {
     void load();
