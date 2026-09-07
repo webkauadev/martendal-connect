@@ -12,6 +12,14 @@ import {
 } from "recharts";
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  PANEL_EMAIL,
+  getPanelToken,
+  panelChangeSecret,
+  panelLogin,
+  panelLogout,
+  panelSessionValid,
+} from "@/lib/panel-auth";
 
 const LOGO_URL = "/martendal-logo.jpg";
 
