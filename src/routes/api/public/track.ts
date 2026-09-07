@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { createFileRoute } from "@tanstack/react-router";
+
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/config";
 
 const EVENT_TYPES = [
   "page_view",
@@ -30,8 +32,8 @@ export const Route = createFileRoute("/api/public/track")({
             return new Response(JSON.stringify({ ok: false }), { status: 400 });
           }
 
-          const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-          const supabase = createClient(process.env["SUPABASE_URL"]!, key, {
+          const key = SUPABASE_PUBLISHABLE_KEY;
+          const supabase = createClient(SUPABASE_URL, key, {
             auth: { persistSession: false, autoRefreshToken: false },
             global: {
               fetch: (input, init) => {
@@ -61,7 +63,6 @@ export const Route = createFileRoute("/api/public/track")({
             landing_path: str(body["landing_path"], 200),
             device_type: str(body["device_type"], 20),
             catalog_name: str(body["catalog_name"], 120),
-
             lot_number: str(body["lot_number"], 20),
             horse_name: str(body["horse_name"], 120),
             video_url: str(body["video_url"], 300),
