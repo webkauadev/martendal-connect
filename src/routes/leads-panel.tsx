@@ -11,9 +11,7 @@ import {
   YAxis,
 } from "recharts";
 
-import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 
 
 
@@ -204,21 +202,18 @@ function LoginScreen({ denied }: { denied: boolean }) {
   async function signIn() {
     setBusy(true);
     setError(null);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/leads-panel`,
-      extraParams: { prompt: "select_account" },
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/leads-panel`,
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (result.error) {
-      setError(
-        `Não foi possível iniciar o login com o Google. ${
-          result.error instanceof Error ? result.error.message : String(result.error)
-        }`,
-      );
+    if (oauthError) {
+      setError(`Não foi possível iniciar o login com o Google. ${oauthError.message}`);
       setBusy(false);
       return;
     }
-    if (result.redirected) return;
-    // Sessão já definida pelo broker; a verificação de allowlist roda no efeito.
   }
 
 
@@ -227,7 +222,7 @@ function LoginScreen({ denied }: { denied: boolean }) {
     <div className="flex min-h-screen items-center justify-center bg-[#050706] px-5 py-10">
       <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0B100D] p-8 text-center shadow-2xl">
         <img
-          src={logoAsset.url}
+          src={LOGO_URL}
           alt="Pecuária Martendal"
           width={84}
           height={84}
@@ -968,7 +963,7 @@ function Dashboard({ email }: { email: string }) {
     <div className="min-h-screen bg-[#050706] px-4 py-6 text-white sm:px-8">
       <header className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 border-b border-white/10 pb-5">
         <img
-          src={logoAsset.url}
+          src={LOGO_URL}
           alt="Pecuária Martendal"
           width={48}
           height={48}
