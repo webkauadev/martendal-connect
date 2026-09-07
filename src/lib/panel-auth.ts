@@ -33,6 +33,9 @@ export async function panelLogin(secret: string): Promise<{ ok: boolean; error?:
   });
   if (error) return { ok: false, error: "Não foi possível validar a chave. Tente novamente." };
   const payload = (data ?? {}) as LoginPayload;
+  if (payload.error === "rate_limited") {
+    return { ok: false, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
+  }
   if (!payload.token) return { ok: false, error: "Chave inválida." };
   setPanelToken(payload.token);
   return { ok: true };
