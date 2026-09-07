@@ -1,21 +1,13 @@
 // Mensagens do WhatsApp exclusivas do catálogo (não altera a squeeze).
-import { EVENT_NAME, normalizeTrafficSource, WHATSAPP_NUMBER } from "./squeeze-config";
-
-function originPhrase(utmSource: string): string {
-  const source = normalizeTrafficSource(utmSource);
-  if (source === "Instagram") return "Vim pelo Instagram.";
-  if (source === "Facebook") return "Vim pelo Facebook.";
-  if (source === "Meta") return "Vim pelo anúncio.";
-  return "Vim pelo catálogo digital.";
-}
+import { WHATSAPP_NUMBER } from "./squeeze-config";
 
 export function buildCatalogWhatsAppUrl(
-  utmSource: string,
+  _utmSource: string,
   lot?: { lotNumber: string; horseName: string } | null,
 ): string {
-  const origin = originPhrase(utmSource);
   const text = lot
-    ? `Olá, Bárbara! Quero falar sobre o LOTE ${lot.lotNumber} - ${lot.horseName}, do ${EVENT_NAME}. ${origin}`
-    : `Olá, Bárbara! Estou vendo o catálogo do ${EVENT_NAME} e quero mais informações. ${origin}`;
+    ? `Olá, Bárbara! Vi o Lote ${lot.lotNumber} — ${lot.horseName} no catálogo do Martendal Weekend 2026 e tenho interesse. Quero mais informações sobre este lote e também reservar minha mesa.`
+    : "Olá, Bárbara! Estou vendo o catálogo do Martendal Weekend 2026 e gostaria de mais informações. Também quero reservar minha mesa.";
+
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
