@@ -91,7 +91,48 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      panel_change_secret: {
+        Args: { p_current: string; p_new: string; p_token: string }
+        Returns: Json
+      }
+      panel_get_tracking_events: {
+        Args: { p_token: string }
+        Returns: {
+          ad_id: string | null
+          adset_id: string | null
+          campaign_id: string | null
+          catalog_name: string | null
+          created_at: string
+          device_type: string | null
+          event_type: string
+          experience_type: string | null
+          horse_name: string | null
+          id: string
+          landing_path: string | null
+          lot_number: string | null
+          referrer: string | null
+          session_id: string | null
+          traffic_source: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          video_url: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "martendal_tracking_events"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      panel_login: {
+        Args: { p_email: string; p_secret: string }
+        Returns: Json
+      }
+      panel_logout: { Args: { p_token: string }; Returns: Json }
+      panel_session_valid: { Args: { p_token: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
