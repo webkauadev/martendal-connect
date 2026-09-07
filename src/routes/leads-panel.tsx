@@ -13,6 +13,8 @@ import {
 
 import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+
 
 
 const ALLOWED_EMAIL = "beludokuka321@gmail.com";
