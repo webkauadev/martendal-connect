@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import {
   CATALOG_COVER,
   CATALOG_EXTRA_PAGES,
@@ -126,7 +125,7 @@ function CatalogPage() {
     <main className="cat">
       <header className="cat-head">
         <img
-          src={logoAsset.url}
+          src="/martendal-logo.jpg"
           alt="Pecuária Martendal"
           width={64}
           height={64}

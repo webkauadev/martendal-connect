@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
-import logoAsset from "@/assets/martendal-logo.jpg.asset.json";
 import {
   trackInternalPageViewOnce,
   trackInternalWhatsAppClick,
@@ -66,7 +65,7 @@ function SqueezePage() {
       <div className="squeeze-inner">
         <div className="squeeze-top">
           <img
-            src={logoAsset.url}
+            src="/martendal-logo.jpg"
             alt="Pecuária Martendal"
             width={120}
             height={120}
