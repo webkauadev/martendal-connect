@@ -6,7 +6,6 @@ import {
   CATALOG_EXTRA_PAGES,
   CATALOG_LOTS,
   CATALOG_OG_IMAGE,
-  CATALOG_PDF_URL,
   PAGE_HEIGHT,
   PAGE_WIDTH,
   type CatalogLot,
@@ -262,17 +261,6 @@ function CatalogPage() {
           />
         ))}
       </div>
-
-      <p className="cat-pdf">
-        <a
-          href={CATALOG_PDF_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackInternalEvent("pdf_download")}
-        >
-          Abrir catálogo oficial em PDF
-        </a>
-      </p>
 
       <div className="cat-cta-wrap">
         <a
