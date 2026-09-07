@@ -90,6 +90,16 @@ const metaPixelSnippet = `(function(w,d,src,pixelId){
   if(!w.__martendalMetaPageViewQueued){w.__martendalMetaPageViewQueued=!0;w.fbq('track','PageView');}
 })(window,document,'${META_PIXEL_LOADER}','${META_PIXEL_ID}');`;
 
+// Vercel Web Analytics. Usa o endpoint first-party da própria implantação.
+// O painel administrativo é excluído para não contaminar as métricas públicas.
+const vercelAnalyticsSnippet = `(function(w,d){
+  if(w.location.pathname==='/leads-panel')return;
+  w.va=w.va||function(){(w.vaq=w.vaq||[]).push(arguments)};
+  if(d.querySelector('script[src="/_vercel/insights/script.js"]'))return;
+  var s=d.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';
+  (d.head||d.getElementsByTagName('head')[0]).appendChild(s);
+})(window,document);`;
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -123,6 +133,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: metaPixelSnippet }} />
+        <script dangerouslySetInnerHTML={{ __html: vercelAnalyticsSnippet }} />
       </head>
       <body>
         <noscript>
