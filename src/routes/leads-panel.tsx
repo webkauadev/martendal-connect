@@ -969,6 +969,13 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
           <span className="hidden text-white/60 sm:inline">{email}</span>
           <button
             type="button"
+            onClick={() => setShowSecretForm((v) => !v)}
+            className="rounded-lg border border-white/15 px-3 py-1.5 font-semibold text-white/80 transition hover:bg-white/10"
+          >
+            Alterar chave
+          </button>
+          <button
+            type="button"
             onClick={() => void signOut()}
             className="rounded-lg border border-white/15 px-3 py-1.5 font-semibold text-white/80 transition hover:bg-white/10"
           >
@@ -976,6 +983,11 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
           </button>
         </div>
       </header>
+
+      {showSecretForm ? (
+        <ChangeSecretForm onDone={onSignedOut} onCancel={() => setShowSecretForm(false)} />
+      ) : null}
+
 
       <main className="mx-auto max-w-7xl space-y-6 pt-6">
         {/* Filtros */}
