@@ -8,7 +8,6 @@ const SQUEEZE_PATH = "/leilao-martendal-weekend-2026";
 const CATALOG_PATH = "/catalago/leilao-martendal-weekend-2026";
 const ALLOWED_PATHS = new Set([SQUEEZE_PATH, CATALOG_PATH]);
 const DEVICE_TYPES = new Set(["Mobile", "Tablet", "Desktop", "Unknown"]);
-const CATALOG_NAME = "Quarto de Milha - Martendal Weekend 2026";
 
 const EVENT_TYPES = [
   "page_view",
@@ -112,7 +111,6 @@ export const Route = createFileRoute("/api/public/track")({
             referrer: str(body["referrer"]),
             landing_path: landingPath,
             device_type: deviceType,
-            catalog_name: catalogRequest ? CATALOG_NAME : null,
             lot_number: lotNumber,
             horse_name: horseName,
             video_url: videoUrl,
