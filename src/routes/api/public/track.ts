@@ -1,24 +1,17 @@
+import {
+  catalogForPath,
+  eventAllowedAtPath,
+  isCatalogKey,
+  TRACKING_EVENTS,
+} from "@/lib/catalog-tracking-contract";
 import { createClient } from "@supabase/supabase-js";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/config";
 
 const MAX_BODY_BYTES = 16 * 1024;
-const SQUEEZE_PATH = "/leilao-martendal-weekend-2026";
-const CATALOG_PATH = "/catalago/leilao-martendal-weekend-2026";
-const ALLOWED_PATHS = new Set([SQUEEZE_PATH, CATALOG_PATH]);
 const DEVICE_TYPES = new Set(["Mobile", "Tablet", "Desktop", "Unknown"]);
-
-const EVENT_TYPES = [
-  "page_view",
-  "whatsapp_click",
-  "catalog_view",
-  "lot_view",
-  "lot_whatsapp_click",
-  "catalog_whatsapp_click",
-  "catalog_video_click",
-  "pdf_download",
-] as const;
+const EVENT_TYPES = TRACKING_EVENTS;
 
 type EventType = (typeof EVENT_TYPES)[number];
 
@@ -35,12 +28,12 @@ function jsonResponse(status: number, ok: boolean): Response {
   });
 }
 
-function isCatalogEvent(eventType: EventType): boolean {
-  return eventType.startsWith("catalog_") || eventType.startsWith("lot_") || eventType === "pdf_download";
-}
-
 function isLotEvent(eventType: EventType): boolean {
-  return eventType === "lot_view" || eventType === "lot_whatsapp_click" || eventType === "catalog_video_click";
+  return (
+    eventType === "lot_view" ||
+    eventType === "lot_whatsapp_click" ||
+    eventType === "catalog_video_click"
+  );
 }
 
 export const Route = createFileRoute("/api/public/track")({
@@ -66,14 +59,17 @@ export const Route = createFileRoute("/api/public/track")({
           const landingPath = str(body["landing_path"], 200);
           const trafficSource = str(body["traffic_source"], 80);
           const deviceType = str(body["device_type"], 20);
-          if (!sessionId || !landingPath || !trafficSource || !deviceType) return jsonResponse(400, false);
-          if (!ALLOWED_PATHS.has(landingPath) || !DEVICE_TYPES.has(deviceType)) return jsonResponse(400, false);
-
-          const catalogRequest = landingPath === CATALOG_PATH;
-          if (isCatalogEvent(eventType) && !catalogRequest) return jsonResponse(400, false);
-          if ((eventType === "page_view" || eventType === "whatsapp_click") && catalogRequest) {
+          if (!sessionId || !landingPath || !trafficSource || !deviceType)
             return jsonResponse(400, false);
-          }
+          if (!DEVICE_TYPES.has(deviceType)) return jsonResponse(400, false);
+
+          if (!eventAllowedAtPath(eventType, landingPath)) return jsonResponse(400, false);
+          const catalog = catalogForPath(landingPath);
+          const selectedKey = body["catalog_key"];
+          if (eventType === "catalog_selected" && !isCatalogKey(selectedKey))
+            return jsonResponse(400, false);
+          if (eventType === "catalog_selector_view" && selectedKey != null)
+            return jsonResponse(400, false);
 
           const lotNumber = str(body["lot_number"], 20);
           const horseName = str(body["horse_name"], 120);
@@ -98,6 +94,9 @@ export const Route = createFileRoute("/api/public/track")({
 
           const { error } = await supabase.from("martendal_tracking_events").insert({
             event_type: eventType,
+            catalog_name: catalog?.catalogName ?? null,
+            catalog_key:
+              catalog?.catalogKey ?? (eventType === "catalog_selected" ? selectedKey : null),
             session_id: sessionId,
             utm_source: str(body["utm_source"]),
             utm_medium: str(body["utm_medium"]),
@@ -117,7 +116,7 @@ export const Route = createFileRoute("/api/public/track")({
           });
 
           if (error) {
-            // lot_view é único por sessão+lote. Recarregar a mesma sessão não é erro de tracking.
+            // lot_view é único por sessão+catálogo+lote. Recarregar a mesma sessão não é erro de tracking.
             if (eventType === "lot_view" && error.code === "23505") return jsonResponse(202, true);
             console.error("tracking insert failed", error.message);
             return jsonResponse(500, false);

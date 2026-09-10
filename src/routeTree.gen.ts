@@ -14,6 +14,8 @@ import { Route as LeadsPanelRouteImport } from './routes/leads-panel'
 import { Route as LeilaoMartendalWeekend2026RouteImport } from './routes/leilao-martendal-weekend-2026'
 import { Route as CatalagoLeilaoMartendalWeekend2026RouteImport } from './routes/catalago.leilao-martendal-weekend-2026'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
+import { Route as CatalagoLeilaoMartendalWeekend2026FemeasRouteImport } from './routes/catalago.leilao-martendal-weekend-2026_.femeas'
+import { Route as CatalagoLeilaoMartendalWeekend2026MachosRouteImport } from './routes/catalago.leilao-martendal-weekend-2026_.machos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -42,6 +44,18 @@ const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
   path: '/api/public/track',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CatalagoLeilaoMartendalWeekend2026FemeasRoute =
+  CatalagoLeilaoMartendalWeekend2026FemeasRouteImport.update({
+    id: '/catalago/leilao-martendal-weekend-2026_/femeas',
+    path: '/catalago/leilao-martendal-weekend-2026/femeas',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CatalagoLeilaoMartendalWeekend2026MachosRoute =
+  CatalagoLeilaoMartendalWeekend2026MachosRouteImport.update({
+    id: '/catalago/leilao-martendal-weekend-2026_/machos',
+    path: '/catalago/leilao-martendal-weekend-2026/machos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -49,6 +63,8 @@ export interface FileRoutesByFullPath {
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
   '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
   '/api/public/track': typeof ApiPublicTrackRoute
+  '/catalago/leilao-martendal-weekend-2026/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
+  '/catalago/leilao-martendal-weekend-2026/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -56,6 +72,8 @@ export interface FileRoutesByTo {
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
   '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
   '/api/public/track': typeof ApiPublicTrackRoute
+  '/catalago/leilao-martendal-weekend-2026/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
+  '/catalago/leilao-martendal-weekend-2026/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -64,6 +82,8 @@ export interface FileRoutesById {
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
   '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
   '/api/public/track': typeof ApiPublicTrackRoute
+  '/catalago/leilao-martendal-weekend-2026_/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
+  '/catalago/leilao-martendal-weekend-2026_/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -73,6 +93,8 @@ export interface FileRouteTypes {
     | '/leilao-martendal-weekend-2026'
     | '/catalago/leilao-martendal-weekend-2026'
     | '/api/public/track'
+    | '/catalago/leilao-martendal-weekend-2026/femeas'
+    | '/catalago/leilao-martendal-weekend-2026/machos'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -80,6 +102,8 @@ export interface FileRouteTypes {
     | '/leilao-martendal-weekend-2026'
     | '/catalago/leilao-martendal-weekend-2026'
     | '/api/public/track'
+    | '/catalago/leilao-martendal-weekend-2026/femeas'
+    | '/catalago/leilao-martendal-weekend-2026/machos'
   id:
     | '__root__'
     | '/'
@@ -87,6 +111,8 @@ export interface FileRouteTypes {
     | '/leilao-martendal-weekend-2026'
     | '/catalago/leilao-martendal-weekend-2026'
     | '/api/public/track'
+    | '/catalago/leilao-martendal-weekend-2026_/femeas'
+    | '/catalago/leilao-martendal-weekend-2026_/machos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -95,6 +121,8 @@ export interface RootRouteChildren {
   LeilaoMartendalWeekend2026Route: typeof LeilaoMartendalWeekend2026Route
   CatalagoLeilaoMartendalWeekend2026Route: typeof CatalagoLeilaoMartendalWeekend2026Route
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
+  CatalagoLeilaoMartendalWeekend2026FemeasRoute: typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
+  CatalagoLeilaoMartendalWeekend2026MachosRoute: typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -134,6 +162,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTrackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalago/leilao-martendal-weekend-2026_/femeas': {
+      id: '/catalago/leilao-martendal-weekend-2026_/femeas'
+      path: '/catalago/leilao-martendal-weekend-2026/femeas'
+      fullPath: '/catalago/leilao-martendal-weekend-2026/femeas'
+      preLoaderRoute: typeof CatalagoLeilaoMartendalWeekend2026FemeasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalago/leilao-martendal-weekend-2026_/machos': {
+      id: '/catalago/leilao-martendal-weekend-2026_/machos'
+      path: '/catalago/leilao-martendal-weekend-2026/machos'
+      fullPath: '/catalago/leilao-martendal-weekend-2026/machos'
+      preLoaderRoute: typeof CatalagoLeilaoMartendalWeekend2026MachosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -144,6 +186,10 @@ const rootRouteChildren: RootRouteChildren = {
   CatalagoLeilaoMartendalWeekend2026Route:
     CatalagoLeilaoMartendalWeekend2026Route,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
+  CatalagoLeilaoMartendalWeekend2026FemeasRoute:
+    CatalagoLeilaoMartendalWeekend2026FemeasRoute,
+  CatalagoLeilaoMartendalWeekend2026MachosRoute:
+    CatalagoLeilaoMartendalWeekend2026MachosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

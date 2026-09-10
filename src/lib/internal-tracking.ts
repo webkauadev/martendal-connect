@@ -1,3 +1,4 @@
+import { catalogForPath, type CatalogKey } from "./catalog-tracking-contract";
 // Camada interna de mensuração (independente do Meta Pixel).
 // Nunca bloqueia a renderização nem a abertura do WhatsApp.
 
@@ -14,7 +15,9 @@ export type InternalEventType =
   | "lot_whatsapp_click"
   | "catalog_whatsapp_click"
   | "catalog_video_click"
-  | "pdf_download";
+  | "pdf_download"
+  | "catalog_selector_view"
+  | "catalog_selected";
 
 type TrackingPayload = {
   event_type: InternalEventType;
@@ -35,12 +38,11 @@ type TrackingPayload = {
   horse_name?: string | null;
   video_url?: string | null;
   catalog_name?: string | null;
+  catalog_key?: CatalogKey | null;
 };
 
-const CATALOG_PREFIX = "/catalago/";
-const CATALOG_LABEL = "Quarto de Milha - Martendal Weekend 2026";
-
 export type LotContext = {
+  catalog_key?: CatalogKey | null;
   lot_number?: string | null;
   horse_name?: string | null;
   video_url?: string | null;
@@ -118,7 +120,8 @@ function buildPayload(eventType: TrackingPayload["event_type"]): TrackingPayload
     referrer,
     landing_path: path,
     device_type: detectDevice(),
-    catalog_name: path.startsWith(CATALOG_PREFIX) ? CATALOG_LABEL : null,
+    catalog_name: catalogForPath(path)?.catalogName ?? null,
+    catalog_key: catalogForPath(path)?.catalogKey ?? null,
   };
 }
 
@@ -164,6 +167,7 @@ export function trackInternalEvent(eventType: InternalEventType, context: LotCon
   if (!payload) return;
   send({
     ...payload,
+    catalog_key: context.catalog_key ?? payload.catalog_key ?? null,
     lot_number: context.lot_number ?? null,
     horse_name: context.horse_name ?? null,
     video_url: context.video_url ?? null,
@@ -176,11 +180,13 @@ export function trackInternalLotViewOnce(lotNumber: string, horseName: string): 
   if (typeof window === "undefined") return;
 
   const sessionId = getSessionId();
-  const memoryKey = `${sessionId}:${lotNumber}`;
+  const catalog = catalogForPath(window.location.pathname)?.catalogKey;
+  if (!catalog) return;
+  const memoryKey = `${sessionId}:${catalog}:${lotNumber}`;
   if (lotViewSent.has(memoryKey)) return;
 
   try {
-    const storageKey = `${LOT_VIEW_KEY_PREFIX}${lotNumber}`;
+    const storageKey = `${LOT_VIEW_KEY_PREFIX}${catalog}:${lotNumber}`;
     if (window.sessionStorage.getItem(storageKey) === sessionId) {
       lotViewSent.add(memoryKey);
       return;

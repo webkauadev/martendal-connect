@@ -1,3 +1,4 @@
+import { CATALOGS } from "@/lib/catalog-tracking-contract";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -23,14 +24,14 @@ import {
 
 const LOGO_URL = "/martendal-logo.jpg";
 
-
-
 const ALLOWED_EMAIL = "beludokuka321@gmail.com";
 const TZ = "America/Porto_Velho";
 
 const CATALOG_PREFIX = "/catalago/";
 
 const EVENT_LABELS: Record<string, string> = {
+  catalog_selector_view: "Abriu a seleção de catálogos",
+  catalog_selected: "Selecionou catálogo",
   page_view: "Acessou a squeeze",
   whatsapp_click: "Clicou no WhatsApp",
   catalog_view: "Acessou o catálogo",
@@ -42,11 +43,7 @@ const EVENT_LABELS: Record<string, string> = {
 };
 
 const VIEW_EVENTS = new Set(["page_view", "catalog_view"]);
-const CLICK_EVENTS = new Set([
-  "whatsapp_click",
-  "catalog_whatsapp_click",
-  "lot_whatsapp_click",
-]);
+const CLICK_EVENTS = new Set(["whatsapp_click", "catalog_whatsapp_click", "lot_whatsapp_click"]);
 
 type EventType =
   | "page_view"
@@ -56,7 +53,9 @@ type EventType =
   | "lot_whatsapp_click"
   | "catalog_whatsapp_click"
   | "catalog_video_click"
-  | "pdf_download";
+  | "pdf_download"
+  | "catalog_selector_view"
+  | "catalog_selected";
 
 type EventRow = {
   id: string;
@@ -65,6 +64,7 @@ type EventRow = {
   horse_name: string | null;
   video_url: string | null;
   catalog_name: string | null;
+  catalog_key: string | null;
   experience_type: string | null;
   created_at: string;
   session_id: string | null;
@@ -137,6 +137,33 @@ function lotLabel(lot: string): string {
   return lot === "-100" ? "Coberturas" : `Lote ${lot}`;
 }
 
+function catalogName(row: EventRow): string {
+  if (
+    row.catalog_key === "femeas" ||
+    row.catalog_name === CATALOGS.femeas.catalogName ||
+    row.landing_path === CATALOGS.femeas.path
+  )
+    return CATALOGS.femeas.catalogName;
+  if (
+    row.catalog_key === "machos" ||
+    row.catalog_name === CATALOGS.machos.catalogName ||
+    row.lot_number
+  )
+    return CATALOGS.machos.catalogName;
+  return "Seleção de catálogos";
+}
+function catalogLabel(row: EventRow): string {
+  const name = catalogName(row);
+  return name === CATALOGS.femeas.catalogName
+    ? "Fêmeas Elite"
+    : name === CATALOGS.machos.catalogName
+      ? "Machos"
+      : name;
+}
+function lotIdentity(row: EventRow): string {
+  return `${catalogLabel(row)} / ${lotLabel(row.lot_number ?? "")}`;
+}
+
 function experienceOf(row: EventRow): "squeeze" | "catalog" {
   if (row.experience_type === "catalog" || row.experience_type === "squeeze") {
     return row.experience_type;
@@ -172,7 +199,8 @@ function LeadsPanelRoute() {
     );
   }
 
-  if (status === "ok") return <Dashboard email={PANEL_EMAIL} onSignedOut={() => setStatus("anon")} />;
+  if (status === "ok")
+    return <Dashboard email={PANEL_EMAIL} onSignedOut={() => setStatus("anon")} />;
 
   return <LoginScreen onSignedIn={() => setStatus("ok")} />;
 }
@@ -260,7 +288,6 @@ function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
   );
 }
 
-
 // ------------------------------------------------------------------
 // Dashboard
 // ------------------------------------------------------------------
@@ -286,6 +313,8 @@ type CatalogGroupStats = {
 };
 
 type LotStats = {
+  key: string;
+  catalogName: string;
   lot: string;
   horse: string;
   uniqueViews: number;
@@ -317,7 +346,10 @@ function startOfDayTz(offsetDays: number): Date {
 }
 
 function groupBy(rows: EventRow[], pick: (r: EventRow) => string): GroupStats[] {
-  const map = new Map<string, { views: number; clicks: number; vs: Set<string>; cs: Set<string> }>();
+  const map = new Map<
+    string,
+    { views: number; clicks: number; vs: Set<string>; cs: Set<string> }
+  >();
   for (const row of rows) {
     const key = pick(row);
     let entry = map.get(key);
@@ -371,7 +403,7 @@ function groupCatalogBy(rows: EventRow[], pick: (r: EventRow) => string): Catalo
     const session = sid(row);
     entry.sessions.add(session);
     if (row.event_type === "lot_view" && row.lot_number) {
-      entry.lotViews.add(`${session}:${row.lot_number}`);
+      entry.lotViews.add(`${session}:${lotIdentity(row)}`);
     }
     if (row.event_type === "lot_whatsapp_click") {
       entry.interested.add(session);
@@ -393,13 +425,7 @@ function groupCatalogBy(rows: EventRow[], pick: (r: EventRow) => string): Catalo
     .sort((a, b) => b.clicks - a.clicks || b.sessions - a.sessions);
 }
 
-function ChangeSecretForm({
-  onDone,
-  onCancel,
-}: {
-  onDone: () => void;
-  onCancel: () => void;
-}) {
+function ChangeSecretForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [busy, setBusy] = useState(false);
@@ -507,7 +533,6 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
     setLoading(false);
   }, [onSignedOut]);
 
-
   useEffect(() => {
     void load();
   }, [load]);
@@ -544,12 +569,13 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
     return periodRows.filter((r) => {
       if (exp !== "all" && experienceOf(r) !== exp) return false;
       if (fSource && label(r.traffic_source, "Direto / Desconhecido") !== fSource) return false;
-      if (fCampaign && label(r.utm_campaign, "Sem campanha identificada") !== fCampaign) return false;
+      if (fCampaign && label(r.utm_campaign, "Sem campanha identificada") !== fCampaign)
+        return false;
       if (fTerm && label(r.utm_term, "Sem conjunto identificado") !== fTerm) return false;
       if (fContent && label(r.utm_content, "Sem criativo identificado") !== fContent) return false;
       if (fDevice && label(r.device_type, "Unknown") !== fDevice) return false;
       if (fEvent && r.event_type !== fEvent) return false;
-      if (fLot && r.lot_number !== fLot) return false;
+      if (fLot && lotIdentity(r) !== fLot) return false;
       if (q) {
         const hay = `${r.lot_number ?? ""} ${r.horse_name ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -609,12 +635,12 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
     const sessions = new Set(views.map(sid));
     const lotViewRows = catalogRows.filter((r) => r.event_type === "lot_view");
     const lotViewUnique = new Set(
-      lotViewRows.filter((r) => r.lot_number).map((r) => `${sid(r)}:${r.lot_number}`),
+      lotViewRows.filter((r) => r.lot_number).map((r) => `${sid(r)}:${lotIdentity(r)}`),
     );
     const lotViewSessions = new Set(lotViewRows.map(sid));
     const lotClicks = catalogRows.filter((r) => r.event_type === "lot_whatsapp_click");
     const lotInterestUnique = new Set(
-      lotClicks.filter((r) => r.lot_number).map((r) => `${sid(r)}:${r.lot_number}`),
+      lotClicks.filter((r) => r.lot_number).map((r) => `${sid(r)}:${lotIdentity(r)}`),
     );
     const interestSessions = new Set(lotClicks.map(sid));
     const globalClicks = catalogRows.filter((r) => r.event_type === "catalog_whatsapp_click");
@@ -635,15 +661,15 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
       videos: videos.length,
       videoSessions: videoSessions.size,
       pdfs: pdfs.length,
-      interestRate: lotViewSessions.size
-        ? (interestSessions.size / lotViewSessions.size) * 100
-        : 0,
+      interestRate: lotViewSessions.size ? (interestSessions.size / lotViewSessions.size) * 100 : 0,
       advanceRate: sessions.size ? (waSessions.size / sessions.size) * 100 : 0,
     };
   }, [catalogRows]);
 
   const lotStats = useMemo<LotStats[]>(() => {
     type Acc = {
+      key: string;
+      catalogName: string;
       lot: string;
       horse: string;
       viewSessions: Set<string>;
@@ -672,9 +698,11 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
 
     for (const row of catalogRows) {
       if (!row.lot_number) continue;
-      let acc = map.get(row.lot_number);
+      let acc = map.get(lotIdentity(row));
       if (!acc) {
         acc = {
+          key: lotIdentity(row),
+          catalogName: catalogName(row),
           lot: row.lot_number,
           horse: row.horse_name ?? "—",
           viewSessions: new Set(),
@@ -689,7 +717,7 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
           devices: new Map(),
           videoUrl: null,
         };
-        map.set(row.lot_number, acc);
+        map.set(lotIdentity(row), acc);
       }
       if (row.horse_name) acc.horse = row.horse_name;
       if (row.video_url) acc.videoUrl = row.video_url;
@@ -721,17 +749,17 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
     const seenContent = new Set<string>();
     for (const row of catalogRows) {
       if (row.event_type !== "lot_whatsapp_click" || !row.lot_number) continue;
-      const acc = map.get(row.lot_number);
+      const acc = map.get(lotIdentity(row));
       if (!acc) continue;
       const session = sid(row);
       const campaign = label(row.utm_campaign, "Sem campanha identificada");
       const content = label(row.utm_content, "Sem criativo identificado");
-      const ck = `${row.lot_number}:${campaign}:${session}`;
+      const ck = `${lotIdentity(row)}:${campaign}:${session}`;
       if (!seenCampaign.has(ck)) {
         seenCampaign.add(ck);
         bump3(acc.campaigns, campaign, "interested");
       }
-      const tk = `${row.lot_number}:${content}:${session}`;
+      const tk = `${lotIdentity(row)}:${content}:${session}`;
       if (!seenContent.has(tk)) {
         seenContent.add(tk);
         bump3(acc.contents, content, "interested");
@@ -743,9 +771,10 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
       for (const session of acc.videoSessions) {
         if (acc.interestSessions.has(session)) videoThenWa += 1;
       }
-      const topSource =
-        [...acc.sources.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
+      const topSource = [...acc.sources.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
       return {
+        key: acc.key,
+        catalogName: acc.catalogName,
         lot: acc.lot,
         horse: acc.horse,
         uniqueViews: acc.viewSessions.size,
@@ -755,9 +784,7 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
         waClicks: acc.waClicks,
         interested: acc.interestSessions.size,
         videoThenWa,
-        rate: acc.viewSessions.size
-          ? (acc.interestSessions.size / acc.viewSessions.size) * 100
-          : 0,
+        rate: acc.viewSessions.size ? (acc.interestSessions.size / acc.viewSessions.size) * 100 : 0,
         topSource,
         sources: acc.sources,
         campaigns: acc.campaigns,
@@ -771,7 +798,10 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
   const [sortKey, setSortKey] = useState<keyof LotStats>("uniqueViews");
 
   const lotsMostViewed = useMemo(
-    () => [...lotStats].sort((a, b) => b.uniqueViews - a.uniqueViews || b.interested - a.interested).slice(0, 20),
+    () =>
+      [...lotStats]
+        .sort((a, b) => b.uniqueViews - a.uniqueViews || b.interested - a.interested)
+        .slice(0, 20),
     [lotStats],
   );
   const lotsMostInterest = useMemo(
@@ -795,9 +825,7 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
   );
 
   const catalogFunnel = useMemo(() => {
-    const visitors = new Set(
-      catalogRows.filter((r) => r.event_type === "catalog_view").map(sid),
-    );
+    const visitors = new Set(catalogRows.filter((r) => r.event_type === "catalog_view").map(sid));
     const viewedLot = new Set(catalogRows.filter((r) => r.event_type === "lot_view").map(sid));
     const video = new Set(
       catalogRows.filter((r) => r.event_type === "catalog_video_click").map(sid),
@@ -808,8 +836,7 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
     const whatsapp = new Set(
       catalogRows
         .filter(
-          (r) =>
-            r.event_type === "lot_whatsapp_click" || r.event_type === "catalog_whatsapp_click",
+          (r) => r.event_type === "lot_whatsapp_click" || r.event_type === "catalog_whatsapp_click",
         )
         .map(sid),
     );
@@ -853,10 +880,10 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
       const session = sid(row);
       if (row.event_type === "catalog_view") entry.visitantes.add(session);
       if (row.event_type === "lot_view" && row.lot_number) {
-        entry.lotes.add(`${session}:${row.lot_number}`);
+        entry.lotes.add(`${session}:${lotIdentity(row)}`);
       }
       if (row.event_type === "lot_whatsapp_click" && row.lot_number) {
-        entry.interesses.add(`${session}:${row.lot_number}`);
+        entry.interesses.add(`${session}:${lotIdentity(row)}`);
       }
       if (CLICK_EVENTS.has(row.event_type)) entry.whatsapp += 1;
     }
@@ -950,8 +977,8 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
   const deviceOptions = useMemo(() => options((r) => label(r.device_type, "Unknown")), [options]);
   const lotOptions = useMemo(
     () =>
-      [...new Set((rows ?? []).map((r) => r.lot_number).filter(Boolean) as string[])].sort(
-        (a, b) => Number(a) - Number(b),
+      [...new Set((rows ?? []).filter((r) => r.lot_number).map(lotIdentity))].sort((a, b) =>
+        a.localeCompare(b),
       ),
     [rows],
   );
@@ -962,7 +989,7 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
   );
 
   const lotDetail = useMemo(
-    () => (openLot ? lotStats.find((l) => l.lot === openLot) ?? null : null),
+    () => (openLot ? (lotStats.find((l) => l.key === openLot) ?? null) : null),
     [openLot, lotStats],
   );
 
@@ -978,7 +1005,6 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
     onSignedOut();
   }
 
-
   function exportCsv() {
     const cols = [
       "created_at",
@@ -986,6 +1012,7 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
       "experience_type",
       "landing_path",
       "catalog_name",
+      "catalog_key",
       "lot_number",
       "horse_name",
       "video_url",
@@ -1062,7 +1089,6 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
       {showSecretForm ? (
         <ChangeSecretForm onDone={onSignedOut} onCancel={() => setShowSecretForm(false)} />
       ) : null}
-
 
       <main className="mx-auto max-w-7xl space-y-6 pt-6">
         {/* Filtros */}
@@ -1152,33 +1178,43 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
           </div>
 
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            <Select value={fSource} onChange={setFSource} placeholder="Origem" options={sourceOptions} />
+            <Select
+              value={fSource}
+              onChange={setFSource}
+              placeholder="Origem"
+              options={sourceOptions}
+            />
             <Select
               value={fCampaign}
               onChange={setFCampaign}
               placeholder="Campanha"
               options={campaignOptions}
             />
-            <Select value={fTerm} onChange={setFTerm} placeholder="Conjunto" options={termOptions} />
+            <Select
+              value={fTerm}
+              onChange={setFTerm}
+              placeholder="Conjunto"
+              options={termOptions}
+            />
             <Select
               value={fContent}
               onChange={setFContent}
               placeholder="Criativo"
               options={contentOptions}
             />
-            <Select value={fDevice} onChange={setFDevice} placeholder="Dispositivo" options={deviceOptions} />
+            <Select
+              value={fDevice}
+              onChange={setFDevice}
+              placeholder="Dispositivo"
+              options={deviceOptions}
+            />
             <Select
               value={fEvent}
               onChange={setFEvent}
               placeholder="Tipo de evento"
               options={Object.keys(EVENT_LABELS)}
             />
-            <Select
-              value={fLot}
-              onChange={setFLot}
-              placeholder="Lote"
-              options={lotOptions}
-            />
+            <Select value={fLot} onChange={setFLot} placeholder="Lote" options={lotOptions} />
             <input
               value={lotSearch}
               onChange={(e) => setLotSearch(e.target.value)}
@@ -1232,7 +1268,10 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
               <span className="text-white/30">↓</span>
               <FunnelStep value={squeezeTotals.uniques} text="visitantes únicos" />
               <span className="text-white/30">↓</span>
-              <FunnelStep value={squeezeTotals.clickSessions} text="sessões que abriram o WhatsApp" />
+              <FunnelStep
+                value={squeezeTotals.clickSessions}
+                text="sessões que abriram o WhatsApp"
+              />
             </div>
           </Panel>
         ) : null}
@@ -1277,7 +1316,10 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
               <div className="flex flex-col items-center gap-1 text-center">
                 <FunnelStep value={catalogFunnel.visitors} text="visitantes do catálogo" />
                 <span className="text-white/30">↓</span>
-                <FunnelStep value={catalogFunnel.viewedLot} text="visualizaram pelo menos um lote" />
+                <FunnelStep
+                  value={catalogFunnel.viewedLot}
+                  text="visualizaram pelo menos um lote"
+                />
                 <p className="text-xs text-white/40">
                   ({catalogFunnel.video} clicaram em pelo menos um vídeo — etapa opcional)
                 </p>
@@ -1348,10 +1390,8 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
                     </thead>
                     <tbody>
                       {videosRanking.map((row) => (
-                        <tr key={row.lot} className="border-t border-white/8 text-white/80">
-                          <td className="py-2 pr-3 font-semibold whitespace-nowrap">
-                            {lotLabel(row.lot)}
-                          </td>
+                        <tr key={row.key} className="border-t border-white/8 text-white/80">
+                          <td className="py-2 pr-3 font-semibold whitespace-nowrap">{row.key}</td>
                           <td className="py-2 pr-3">{row.horse}</td>
                           <td className="py-2 pr-3">{row.videoClicks}</td>
                           <td className="py-2 pr-3">{row.videoSessions}</td>
@@ -1393,10 +1433,30 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
                       }}
                     />
                     <Legend />
-                    <Bar dataKey="visitantes" name="Visitantes" fill="#1c7a45" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="lotes" name="Lotes visualizados" fill="#2f9d63" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="interesses" name="Interesses em lotes" fill="#e0bd45" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="whatsapp" name="Cliques WhatsApp" fill="#3ddc84" radius={[4, 4, 0, 0]} />
+                    <Bar
+                      dataKey="visitantes"
+                      name="Visitantes"
+                      fill="#1c7a45"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="lotes"
+                      name="Lotes visualizados"
+                      fill="#2f9d63"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="interesses"
+                      name="Interesses em lotes"
+                      fill="#e0bd45"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="whatsapp"
+                      name="Cliques WhatsApp"
+                      fill="#3ddc84"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1419,15 +1479,24 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
         </Panel>
 
         <Panel title="Origem do tráfego (utm_source)">
-          <StatsTable rows={byUtmSource.filter((r) => matchesSearch(r.key))} firstColumn="utm_source" />
+          <StatsTable
+            rows={byUtmSource.filter((r) => matchesSearch(r.key))}
+            firstColumn="utm_source"
+          />
         </Panel>
 
         <Panel title="Desempenho por campanha">
-          <StatsTable rows={byCampaign.filter((r) => matchesSearch(r.key))} firstColumn="Campanha" />
+          <StatsTable
+            rows={byCampaign.filter((r) => matchesSearch(r.key))}
+            firstColumn="Campanha"
+          />
         </Panel>
 
         <Panel title="Desempenho por conjunto / público">
-          <StatsTable rows={byTerm.filter((r) => matchesSearch(r.key))} firstColumn="Conjunto / Público" />
+          <StatsTable
+            rows={byTerm.filter((r) => matchesSearch(r.key))}
+            firstColumn="Conjunto / Público"
+          />
         </Panel>
 
         <Panel title="Desempenho por criativo">
@@ -1451,7 +1520,12 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
                 />
                 <Legend />
                 <Bar dataKey="acessos" name="Acessos" fill="#1c7a45" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="cliques" name="Cliques no WhatsApp" fill="#e0bd45" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="cliques"
+                  name="Cliques no WhatsApp"
+                  fill="#e0bd45"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -1480,10 +1554,12 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
               <tbody>
                 {pageRows.map((row) => (
                   <tr key={row.id} className="border-t border-white/8 text-white/80">
-                    <td className="py-2 pr-3 whitespace-nowrap">{formatDateTime(row.created_at)}</td>
+                    <td className="py-2 pr-3 whitespace-nowrap">
+                      {formatDateTime(row.created_at)}
+                    </td>
                     <td className="py-2 pr-3">{label(row.traffic_source, "—")}</td>
                     <td className="py-2 pr-3">
-                      {experienceOf(row) === "catalog" ? "Catálogo" : "Squeeze"}
+                      {experienceOf(row) === "catalog" ? catalogLabel(row) : "Squeeze"}
                     </td>
                     <td className="py-2 pr-3">
                       {row.lot_number
@@ -1553,7 +1629,7 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
                 <span>
                   {EVENT_LABELS[row.event_type] ?? row.event_type}
                   {row.lot_number
-                    ? ` · ${lotLabel(row.lot_number)}${row.horse_name ? ` — ${row.horse_name}` : ""}`
+                    ? ` · ${lotIdentity(row)}${row.horse_name ? ` — ${row.horse_name}` : ""}`
                     : ""}
                 </span>
               </li>
@@ -1727,12 +1803,12 @@ function LotTable({
         <tbody>
           {rows.map((row, index) => (
             <tr
-              key={row.lot}
-              onClick={() => onOpen(row.lot)}
+              key={row.key}
+              onClick={() => onOpen(row.key)}
               className="cursor-pointer border-t border-white/8 text-white/80 transition hover:bg-white/5"
             >
               {ranked ? <td className="py-2 pr-3 text-white/50">{index + 1}</td> : null}
-              <td className="py-2 pr-3 font-semibold whitespace-nowrap">{lotLabel(row.lot)}</td>
+              <td className="py-2 pr-3 font-semibold whitespace-nowrap">{row.key}</td>
               <td className="py-2 pr-3">{row.horse}</td>
               <td className="py-2 pr-3">{row.uniqueViews}</td>
               <td className="py-2 pr-3 text-white/60">{row.totalViews}</td>
@@ -1779,13 +1855,7 @@ function Drawer({
   );
 }
 
-function MiniList({
-  title,
-  entries,
-}: {
-  title: string;
-  entries: [string, number][];
-}) {
+function MiniList({ title, entries }: { title: string; entries: [string, number][] }) {
   return (
     <div className="mt-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-white/45">{title}</p>
@@ -1809,7 +1879,8 @@ function LotDetail({ lot, onClose }: { lot: LotStats; onClose: () => void }) {
   const campaigns = [...lot.campaigns.entries()].sort((a, b) => b[1].views - a[1].views);
   const contents = [...lot.contents.entries()].sort((a, b) => b[1].views - a[1].views);
   return (
-    <Drawer title={`${lotLabel(lot.lot)} — ${lot.horse}`} onClose={onClose}>
+    <Drawer title={`${lot.key} — ${lot.horse}`} onClose={onClose}>
+      <p className="mb-4 text-sm text-white/70">{lot.catalogName}</p>
       <div className="grid grid-cols-2 gap-3">
         <Card title="Visualizações únicas" value={String(lot.uniqueViews)} />
         <Card title="Visualizações totais" value={String(lot.totalViews)} />

@@ -1,0 +1,506 @@
+[
+  {
+    "event_type": "page_view",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "whatsapp_click",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_view",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "lot_whatsapp_click",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_whatsapp_click",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "pdf_download",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selector_view",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/leilao-martendal-weekend-2026",
+    "catalog_key": "machos",
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "page_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "lot_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "pdf_download",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selector_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": "machos",
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "page_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "lot_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "pdf_download",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_selector_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": "machos",
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "page_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "lot_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "pdf_download",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_selector_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": "machos",
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "page_view",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "whatsapp_click",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_view",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "lot_whatsapp_click",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_whatsapp_click",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "pdf_download",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selector_view",
+    "landing_path": "/arbitrary",
+    "catalog_key": null,
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/arbitrary",
+    "catalog_key": "machos",
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": null,
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": "unknown",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": "femeas",
+    "accept": true
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "lot_number": null,
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "catalog_key": null,
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "lot_number": "01",
+    "horse_name": null,
+    "video_url": "https://youtu.be/test",
+    "catalog_key": null,
+    "accept": false
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": null,
+    "catalog_key": null,
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selector_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "lot_number": "01",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "catalog_key": "machos",
+    "accept": false
+  }
+]

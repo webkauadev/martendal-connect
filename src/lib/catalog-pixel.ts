@@ -1,7 +1,7 @@
 // Eventos Meta Pixel EXCLUSIVOS do catálogo.
 // Reutiliza o bootstrap existente (ensureMetaPixel) — não cria novo pixel,
 // não refatora init/PageView, não duplica nada.
-import { CATALOG_NAME } from "./catalog-data";
+import { CATALOGS, type CatalogContext } from "./catalog-tracking-contract";
 import { EVENT_NAME, normalizeTrafficSource, readUtms } from "./squeeze-config";
 
 type Fbq = (...args: unknown[]) => void;
@@ -20,15 +20,16 @@ function baseParams() {
   };
 }
 
-let catalogViewContentSent = false;
+const catalogViewContentSent = new Set<string>();
 
-export function trackCatalogViewContentOnce(): void {
-  if (catalogViewContentSent) return;
+export function trackCatalogViewContentOnce(catalog: CatalogContext = CATALOGS.machos): void {
+  if (catalogViewContentSent.has(catalog.catalogKey)) return;
   const fbq = getFbq();
   if (!fbq) return;
-  catalogViewContentSent = true;
+  catalogViewContentSent.add(catalog.catalogKey);
   fbq("track", "ViewContent", {
-    content_name: "Catálogo Quarto de Milha - Martendal Weekend 2026",
+    ...catalogParams(catalog),
+    content_name: `Catálogo ${catalog.catalogName}`,
     content_category: "Catálogo",
     content_type: "event",
   });
@@ -37,13 +38,15 @@ export function trackCatalogViewContentOnce(): void {
 export function trackCatalogWhatsAppClick(
   currentLot: string | null,
   currentHorse: string | null,
+  catalog: CatalogContext = CATALOGS.machos,
 ): void {
   const fbq = getFbq();
   if (!fbq) return;
   const { utms, traffic_source } = baseParams();
 
   fbq("track", "Contact", {
-    content_name: "Catálogo Quarto de Milha - Martendal Weekend 2026",
+    ...catalogParams(catalog),
+    content_name: `Catálogo ${catalog.catalogName}`,
     content_category: "Catálogo",
     contact_method: "WhatsApp",
     event_name: EVENT_NAME,
@@ -52,7 +55,8 @@ export function trackCatalogWhatsAppClick(
   });
 
   fbq("trackCustom", "CatalogWhatsAppClick", {
-    catalog_name: CATALOG_NAME,
+    ...catalogParams(catalog),
+
     current_lot: currentLot ?? "none",
     current_horse: currentHorse ?? "none",
     traffic_source,
@@ -60,12 +64,17 @@ export function trackCatalogWhatsAppClick(
   });
 }
 
-export function trackCatalogLotInterest(lotNumber: string, horseName: string): void {
+export function trackCatalogLotInterest(
+  lotNumber: string,
+  horseName: string,
+  catalog: CatalogContext = CATALOGS.machos,
+): void {
   const fbq = getFbq();
   if (!fbq) return;
   const { utms, traffic_source } = baseParams();
 
   fbq("track", "Contact", {
+    ...catalogParams(catalog),
     content_name: `Lote ${lotNumber} - ${horseName}`,
     content_category: "Catálogo",
     contact_method: "WhatsApp",
@@ -75,9 +84,10 @@ export function trackCatalogLotInterest(lotNumber: string, horseName: string): v
   });
 
   fbq("trackCustom", "CatalogLotInterest", {
+    ...catalogParams(catalog),
     lot_number: lotNumber,
     horse_name: horseName,
-    catalog_name: CATALOG_NAME,
+
     traffic_source,
     ...utms,
   });
@@ -87,16 +97,35 @@ export function trackCatalogVideoClick(
   lotNumber: string,
   horseName: string,
   videoUrl: string,
+  catalog: CatalogContext = CATALOGS.machos,
 ): void {
   const fbq = getFbq();
   if (!fbq) return;
   const { utms, traffic_source } = baseParams();
 
   fbq("trackCustom", "CatalogVideoClick", {
+    ...catalogParams(catalog),
     lot_number: lotNumber,
     horse_name: horseName,
     video_url: videoUrl,
     traffic_source,
     ...utms,
   });
+}
+
+function catalogParams(catalog: CatalogContext) {
+  const { utms, traffic_source } = baseParams();
+  const params = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search);
+  return {
+    ...utms,
+    traffic_source,
+    catalog_name: catalog.catalogName,
+    catalog_key: catalog.catalogKey,
+    campaign_id: params.get("campaign_id"),
+    adset_id: params.get("adset_id"),
+    ad_id: params.get("ad_id"),
+  };
+}
+export function trackCatalogSelected(catalog: CatalogContext): void {
+  getFbq()?.("trackCustom", "CatalogSelected", catalogParams(catalog));
 }
