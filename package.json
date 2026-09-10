@@ -11,7 +11,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "panel:key:init": "node scripts/panel-key-init.mjs",
+    "panel:key": "node scripts/panel-key.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"

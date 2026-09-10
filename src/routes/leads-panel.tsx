@@ -12,11 +12,8 @@ import {
   YAxis,
 } from "recharts";
 
-import { supabase } from "@/integrations/supabase/client";
 import {
-  PANEL_EMAIL,
-  getPanelToken,
-  panelChangeSecret,
+  panelGetTrackingEvents,
   panelLogin,
   panelLogout,
   panelSessionValid,
@@ -24,7 +21,6 @@ import {
 
 const LOGO_URL = "/martendal-logo.jpg";
 
-const ALLOWED_EMAIL = "beludokuka321@gmail.com";
 const TZ = "America/Porto_Velho";
 
 const CATALOG_PREFIX = "/catalago/";
@@ -199,14 +195,13 @@ function LeadsPanelRoute() {
     );
   }
 
-  if (status === "ok")
-    return <Dashboard email={PANEL_EMAIL} onSignedOut={() => setStatus("anon")} />;
+  if (status === "ok") return <Dashboard onSignedOut={() => setStatus("anon")} />;
 
   return <LoginScreen onSignedIn={() => setStatus("ok")} />;
 }
 
 function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
-  const [secret, setSecret] = useState("");
+  const [accessKey, setAccessKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -214,13 +209,13 @@ function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
     event.preventDefault();
     setBusy(true);
     setError(null);
-    const result = await panelLogin(secret);
+    const result = await panelLogin(accessKey);
     if (!result.ok) {
       setError(result.error ?? "Chave inválida.");
       setBusy(false);
       return;
     }
-    setSecret("");
+    setAccessKey("");
     setBusy(false);
     onSignedIn();
   }
@@ -240,30 +235,20 @@ function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
 
         <form onSubmit={submit} className="mt-7 space-y-4 text-left">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-white/50">
-              E-mail
-            </label>
-            <input
-              type="email"
-              value={ALLOWED_EMAIL}
-              readOnly
-              disabled
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/60"
-            />
-          </div>
-          <div>
             <label
-              htmlFor="panel-secret"
+              htmlFor="panel-access-key"
               className="text-xs font-semibold uppercase tracking-wide text-white/50"
             >
               Chave de acesso
             </label>
             <input
-              id="panel-secret"
+              id="panel-access-key"
               type="password"
-              autoComplete="current-password"
-              value={secret}
-              onChange={(e) => setSecret(e.target.value)}
+              autoComplete="one-time-code"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={accessKey}
+              onChange={(e) => setAccessKey(e.target.value)}
               required
               className="mt-1 w-full rounded-xl border border-white/10 bg-[#050706] px-3 py-2.5 text-sm text-white outline-none focus:border-white/30"
             />
@@ -277,7 +262,7 @@ function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
 
           <button
             type="submit"
-            disabled={busy || !secret}
+            disabled={busy || !accessKey}
             className="mt-2 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold uppercase tracking-wide text-[#0B100D] transition hover:bg-white/90 disabled:opacity-60"
           >
             {busy ? "Entrando…" : "Entrar"}
@@ -425,76 +410,7 @@ function groupCatalogBy(rows: EventRow[], pick: (r: EventRow) => string): Catalo
     .sort((a, b) => b.clicks - a.clicks || b.sessions - a.sessions);
 }
 
-function ChangeSecretForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
-  const [current, setCurrent] = useState("");
-  const [next, setNext] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    setError(null);
-    const result = await panelChangeSecret(current, next);
-    if (!result.ok) {
-      setError(result.error ?? "Não foi possível alterar a chave.");
-      setBusy(false);
-      return;
-    }
-    onDone();
-  }
-
-  return (
-    <section className="mx-auto mt-5 max-w-7xl rounded-xl border border-white/10 bg-[#0B100D] p-4">
-      <h2 className="text-sm font-bold uppercase tracking-wide text-white/70">Alterar chave</h2>
-      <form onSubmit={submit} className="mt-3 flex flex-wrap items-end gap-3">
-        <label className="text-xs text-white/50">
-          Chave atual
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={current}
-            onChange={(e) => setCurrent(e.target.value)}
-            required
-            className="mt-1 block w-56 rounded-lg border border-white/10 bg-[#050706] px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-          />
-        </label>
-        <label className="text-xs text-white/50">
-          Nova chave (mín. 12 caracteres)
-          <input
-            type="password"
-            autoComplete="new-password"
-            value={next}
-            onChange={(e) => setNext(e.target.value)}
-            required
-            minLength={12}
-            className="mt-1 block w-56 rounded-lg border border-white/10 bg-[#050706] px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-          />
-        </label>
-        <button
-          type="submit"
-          disabled={busy}
-          className="rounded-lg bg-white px-4 py-2 text-sm font-bold uppercase tracking-wide text-[#0B100D] transition hover:bg-white/90 disabled:opacity-60"
-        >
-          {busy ? "Salvando…" : "Salvar"}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10"
-        >
-          Cancelar
-        </button>
-        {error ? <p className="text-sm font-semibold text-red-300">{error}</p> : null}
-        <p className="w-full text-xs text-white/40">
-          Ao alterar a chave, a sessão atual é encerrada e será preciso entrar novamente.
-        </p>
-      </form>
-    </section>
-  );
-}
-
-function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => void }) {
+function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
   const [rows, setRows] = useState<EventRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [period, setPeriod] = useState<Period>("all");
@@ -514,22 +430,26 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
   const [page, setPage] = useState(0);
   const [openLot, setOpenLot] = useState<string | null>(null);
   const [timelineSession, setTimelineSession] = useState<string | null>(null);
-  const [showSecretForm, setShowSecretForm] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const token = getPanelToken();
-    if (!token) {
+
+    const result = await panelGetTrackingEvents();
+
+    if (!result.ok) {
+      if (result.unauthorized) {
+        setLoading(false);
+        onSignedOut();
+        return;
+      }
+
+      setLoadError(result.error ?? "Não foi possível carregar os dados do painel.");
       setLoading(false);
-      onSignedOut();
       return;
     }
-    const { data, error } = await supabase.rpc("panel_get_tracking_events", { p_token: token });
-    if (error) setLoadError(error.message);
-    else {
-      setLoadError(null);
-      setRows((data ?? []) as unknown as EventRow[]);
-    }
+
+    setLoadError(null);
+    setRows(result.events as EventRow[]);
     setLoading(false);
   }, [onSignedOut]);
 
@@ -1068,14 +988,6 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
           <p className="text-sm text-white/50">Painel de performance — squeeze e catálogo</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-white/60 sm:inline">{email}</span>
-          <button
-            type="button"
-            onClick={() => setShowSecretForm((v) => !v)}
-            className="rounded-lg border border-white/15 px-3 py-1.5 font-semibold text-white/80 transition hover:bg-white/10"
-          >
-            Alterar chave
-          </button>
           <button
             type="button"
             onClick={() => void signOut()}
@@ -1085,10 +997,6 @@ function Dashboard({ email, onSignedOut }: { email: string; onSignedOut: () => v
           </button>
         </div>
       </header>
-
-      {showSecretForm ? (
-        <ChangeSecretForm onDone={onSignedOut} onCancel={() => setShowSecretForm(false)} />
-      ) : null}
 
       <main className="mx-auto max-w-7xl space-y-6 pt-6">
         {/* Filtros */}

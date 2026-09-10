@@ -13,6 +13,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LeadsPanelRouteImport } from './routes/leads-panel'
 import { Route as LeilaoMartendalWeekend2026RouteImport } from './routes/leilao-martendal-weekend-2026'
 import { Route as CatalagoLeilaoMartendalWeekend2026RouteImport } from './routes/catalago.leilao-martendal-weekend-2026'
+import { Route as ApiPanelEventsRouteImport } from './routes/api/panel/events'
+import { Route as ApiPanelLoginRouteImport } from './routes/api/panel/login'
+import { Route as ApiPanelLogoutRouteImport } from './routes/api/panel/logout'
+import { Route as ApiPanelSessionRouteImport } from './routes/api/panel/session'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as CatalagoLeilaoMartendalWeekend2026FemeasRouteImport } from './routes/catalago.leilao-martendal-weekend-2026_.femeas'
 import { Route as CatalagoLeilaoMartendalWeekend2026MachosRouteImport } from './routes/catalago.leilao-martendal-weekend-2026_.machos'
@@ -39,6 +43,26 @@ const CatalagoLeilaoMartendalWeekend2026Route =
     path: '/catalago/leilao-martendal-weekend-2026',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPanelEventsRoute = ApiPanelEventsRouteImport.update({
+  id: '/api/panel/events',
+  path: '/api/panel/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPanelLoginRoute = ApiPanelLoginRouteImport.update({
+  id: '/api/panel/login',
+  path: '/api/panel/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPanelLogoutRoute = ApiPanelLogoutRouteImport.update({
+  id: '/api/panel/logout',
+  path: '/api/panel/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPanelSessionRoute = ApiPanelSessionRouteImport.update({
+  id: '/api/panel/session',
+  path: '/api/panel/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTrackRoute = ApiPublicTrackRouteImport.update({
   id: '/api/public/track',
   path: '/api/public/track',
@@ -62,6 +86,10 @@ export interface FileRoutesByFullPath {
   '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
   '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
+  '/api/panel/events': typeof ApiPanelEventsRoute
+  '/api/panel/login': typeof ApiPanelLoginRoute
+  '/api/panel/logout': typeof ApiPanelLogoutRoute
+  '/api/panel/session': typeof ApiPanelSessionRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/catalago/leilao-martendal-weekend-2026/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   '/catalago/leilao-martendal-weekend-2026/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
@@ -71,6 +99,10 @@ export interface FileRoutesByTo {
   '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
   '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
+  '/api/panel/events': typeof ApiPanelEventsRoute
+  '/api/panel/login': typeof ApiPanelLoginRoute
+  '/api/panel/logout': typeof ApiPanelLogoutRoute
+  '/api/panel/session': typeof ApiPanelSessionRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/catalago/leilao-martendal-weekend-2026/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   '/catalago/leilao-martendal-weekend-2026/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
@@ -81,6 +113,10 @@ export interface FileRoutesById {
   '/leads-panel': typeof LeadsPanelRoute
   '/leilao-martendal-weekend-2026': typeof LeilaoMartendalWeekend2026Route
   '/catalago/leilao-martendal-weekend-2026': typeof CatalagoLeilaoMartendalWeekend2026Route
+  '/api/panel/events': typeof ApiPanelEventsRoute
+  '/api/panel/login': typeof ApiPanelLoginRoute
+  '/api/panel/logout': typeof ApiPanelLogoutRoute
+  '/api/panel/session': typeof ApiPanelSessionRoute
   '/api/public/track': typeof ApiPublicTrackRoute
   '/catalago/leilao-martendal-weekend-2026_/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   '/catalago/leilao-martendal-weekend-2026_/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
@@ -92,6 +128,10 @@ export interface FileRouteTypes {
     | '/leads-panel'
     | '/leilao-martendal-weekend-2026'
     | '/catalago/leilao-martendal-weekend-2026'
+    | '/api/panel/events'
+    | '/api/panel/login'
+    | '/api/panel/logout'
+    | '/api/panel/session'
     | '/api/public/track'
     | '/catalago/leilao-martendal-weekend-2026/femeas'
     | '/catalago/leilao-martendal-weekend-2026/machos'
@@ -101,6 +141,10 @@ export interface FileRouteTypes {
     | '/leads-panel'
     | '/leilao-martendal-weekend-2026'
     | '/catalago/leilao-martendal-weekend-2026'
+    | '/api/panel/events'
+    | '/api/panel/login'
+    | '/api/panel/logout'
+    | '/api/panel/session'
     | '/api/public/track'
     | '/catalago/leilao-martendal-weekend-2026/femeas'
     | '/catalago/leilao-martendal-weekend-2026/machos'
@@ -110,6 +154,10 @@ export interface FileRouteTypes {
     | '/leads-panel'
     | '/leilao-martendal-weekend-2026'
     | '/catalago/leilao-martendal-weekend-2026'
+    | '/api/panel/events'
+    | '/api/panel/login'
+    | '/api/panel/logout'
+    | '/api/panel/session'
     | '/api/public/track'
     | '/catalago/leilao-martendal-weekend-2026_/femeas'
     | '/catalago/leilao-martendal-weekend-2026_/machos'
@@ -120,6 +168,10 @@ export interface RootRouteChildren {
   LeadsPanelRoute: typeof LeadsPanelRoute
   LeilaoMartendalWeekend2026Route: typeof LeilaoMartendalWeekend2026Route
   CatalagoLeilaoMartendalWeekend2026Route: typeof CatalagoLeilaoMartendalWeekend2026Route
+  ApiPanelEventsRoute: typeof ApiPanelEventsRoute
+  ApiPanelLoginRoute: typeof ApiPanelLoginRoute
+  ApiPanelLogoutRoute: typeof ApiPanelLogoutRoute
+  ApiPanelSessionRoute: typeof ApiPanelSessionRoute
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
   CatalagoLeilaoMartendalWeekend2026FemeasRoute: typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   CatalagoLeilaoMartendalWeekend2026MachosRoute: typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
@@ -155,6 +207,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CatalagoLeilaoMartendalWeekend2026RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/panel/events': {
+      id: '/api/panel/events'
+      path: '/api/panel/events'
+      fullPath: '/api/panel/events'
+      preLoaderRoute: typeof ApiPanelEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/panel/login': {
+      id: '/api/panel/login'
+      path: '/api/panel/login'
+      fullPath: '/api/panel/login'
+      preLoaderRoute: typeof ApiPanelLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/panel/logout': {
+      id: '/api/panel/logout'
+      path: '/api/panel/logout'
+      fullPath: '/api/panel/logout'
+      preLoaderRoute: typeof ApiPanelLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/panel/session': {
+      id: '/api/panel/session'
+      path: '/api/panel/session'
+      fullPath: '/api/panel/session'
+      preLoaderRoute: typeof ApiPanelSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/track': {
       id: '/api/public/track'
       path: '/api/public/track'
@@ -185,6 +265,10 @@ const rootRouteChildren: RootRouteChildren = {
   LeilaoMartendalWeekend2026Route: LeilaoMartendalWeekend2026Route,
   CatalagoLeilaoMartendalWeekend2026Route:
     CatalagoLeilaoMartendalWeekend2026Route,
+  ApiPanelEventsRoute: ApiPanelEventsRoute,
+  ApiPanelLoginRoute: ApiPanelLoginRoute,
+  ApiPanelLogoutRoute: ApiPanelLogoutRoute,
+  ApiPanelSessionRoute: ApiPanelSessionRoute,
   ApiPublicTrackRoute: ApiPublicTrackRoute,
   CatalagoLeilaoMartendalWeekend2026FemeasRoute:
     CatalagoLeilaoMartendalWeekend2026FemeasRoute,

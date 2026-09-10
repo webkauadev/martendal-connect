@@ -1,84 +1,132 @@
-import { supabase } from "@/integrations/supabase/client";
+type LoginPayload = {
+  ok?: boolean;
+  error?: string;
+};
 
-export const PANEL_EMAIL = "beludokuka321@gmail.com";
-const STORAGE_KEY = "martendal_panel_token";
+type SessionPayload = {
+  authenticated?: boolean;
+  error?: string;
+};
 
-export function getPanelToken(): string | null {
-  if (typeof window === "undefined") return null;
+type EventsPayload = {
+  ok?: boolean;
+  events?: unknown[];
+  error?: string;
+};
+
+async function readJson<T>(response: Response): Promise<T | null> {
   try {
-    return window.sessionStorage.getItem(STORAGE_KEY);
+    return (await response.json()) as T;
   } catch {
     return null;
   }
 }
 
-function setPanelToken(token: string | null) {
-  if (typeof window === "undefined") return;
+export async function panelLogin(key: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    if (token) window.sessionStorage.setItem(STORAGE_KEY, token);
-    else window.sessionStorage.removeItem(STORAGE_KEY);
+    const response = await fetch("/api/panel/login", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ key }),
+    });
+
+    const payload = await readJson<LoginPayload>(response);
+
+    if (response.ok && payload?.ok === true) {
+      return { ok: true };
+    }
+
+    return {
+      ok: false,
+      error: payload?.error ?? "Chave inválida, expirada ou já utilizada.",
+    };
   } catch {
-    /* sessionStorage indisponível */
+    return {
+      ok: false,
+      error: "Serviço de autenticação temporariamente indisponível.",
+    };
   }
-}
-
-type LoginPayload = { token?: string; email?: string; expires_at?: string; error?: string };
-type OkPayload = { ok?: boolean; error?: string };
-type ValidPayload = { valid?: boolean; email?: string };
-
-export async function panelLogin(secret: string): Promise<{ ok: boolean; error?: string }> {
-  const { data, error } = await supabase.rpc("panel_login", {
-    p_email: PANEL_EMAIL,
-    p_secret: secret,
-  });
-  if (error) return { ok: false, error: "Não foi possível validar a chave. Tente novamente." };
-  const payload = (data ?? {}) as LoginPayload;
-  if (payload.error === "rate_limited") {
-    return { ok: false, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
-  }
-  if (!payload.token) return { ok: false, error: "Chave inválida." };
-  setPanelToken(payload.token);
-  return { ok: true };
 }
 
 export async function panelSessionValid(): Promise<boolean> {
-  const token = getPanelToken();
-  if (!token) return false;
-  const { data, error } = await supabase.rpc("panel_session_valid", { p_token: token });
-  if (error) return false;
-  const payload = (data ?? {}) as ValidPayload;
-  if (!payload.valid) {
-    setPanelToken(null);
+  try {
+    const response = await fetch("/api/panel/session", {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const payload = await readJson<SessionPayload>(response);
+
+    return payload?.authenticated === true;
+  } catch {
     return false;
   }
-  return true;
+}
+
+export async function panelGetTrackingEvents(): Promise<{
+  ok: boolean;
+  events: unknown[];
+  unauthorized?: boolean;
+  error?: string;
+}> {
+  try {
+    const response = await fetch("/api/panel/events", {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    const payload = await readJson<EventsPayload>(response);
+
+    if (response.status === 401) {
+      return {
+        ok: false,
+        events: [],
+        unauthorized: true,
+        error: "Sessão expirada.",
+      };
+    }
+
+    if (!response.ok || payload?.ok !== true) {
+      return {
+        ok: false,
+        events: [],
+        error: payload?.error ?? "Não foi possível carregar os dados do painel.",
+      };
+    }
+
+    return {
+      ok: true,
+      events: Array.isArray(payload.events) ? payload.events : [],
+    };
+  } catch {
+    return {
+      ok: false,
+      events: [],
+      error: "Não foi possível carregar os dados do painel.",
+    };
+  }
 }
 
 export async function panelLogout(): Promise<void> {
-  const token = getPanelToken();
-  setPanelToken(null);
-  if (token) await supabase.rpc("panel_logout", { p_token: token });
-}
-
-export async function panelChangeSecret(
-  current: string,
-  next: string,
-): Promise<{ ok: boolean; error?: string }> {
-  const token = getPanelToken();
-  if (!token) return { ok: false, error: "Sessão expirada." };
-  const { data, error } = await supabase.rpc("panel_change_secret", {
-    p_token: token,
-    p_current: current,
-    p_new: next,
-  });
-  if (error) return { ok: false, error: "Não foi possível alterar a chave." };
-  const payload = (data ?? {}) as OkPayload;
-  if (payload.ok) {
-    setPanelToken(null);
-    return { ok: true };
+  try {
+    await fetch("/api/panel/logout", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: "{}",
+    });
+  } catch {
+    // A sessão também expirará server-side.
   }
-  if (payload.error === "weak_secret")
-    return { ok: false, error: "A nova chave precisa ter pelo menos 12 caracteres." };
-  if (payload.error === "unauthorized") return { ok: false, error: "Sessão expirada." };
-  return { ok: false, error: "Chave atual incorreta." };
 }
