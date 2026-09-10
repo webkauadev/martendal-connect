@@ -17,6 +17,8 @@ export const Route = createFileRoute("/api/panel/logout")({
           return panelJson({ ok: false }, 403);
         }
 
+        const clearCookie = clearPanelSessionCookieHeader(request);
+
         const token = readPanelSessionCookie(request);
 
         if (token) {
@@ -26,15 +28,18 @@ export const Route = createFileRoute("/api/panel/logout")({
             return panelJson(
               {
                 ok: false,
-                error: "Não foi possível encerrar a sessão.",
+                error: "Não foi possível encerrar completamente a sessão.",
               },
               503,
+              {
+                "set-cookie": clearCookie,
+              },
             );
           }
         }
 
         return panelJson({ ok: true }, 200, {
-          "set-cookie": clearPanelSessionCookieHeader(request),
+          "set-cookie": clearCookie,
         });
       },
     },
