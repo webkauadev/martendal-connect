@@ -134,27 +134,20 @@ function lotLabel(lot: string): string {
 }
 
 function catalogName(row: EventRow): string {
-  if (
-    row.catalog_key === "femeas" ||
-    row.catalog_name === CATALOGS.femeas.catalogName ||
-    row.landing_path === CATALOGS.femeas.path
-  )
-    return CATALOGS.femeas.catalogName;
-  if (
-    row.catalog_key === "machos" ||
-    row.catalog_name === CATALOGS.machos.catalogName ||
-    row.lot_number
-  )
-    return CATALOGS.machos.catalogName;
+  const catalog = Object.values(CATALOGS).find(
+    (entry) =>
+      row.catalog_key === entry.catalogKey ||
+      row.catalog_name === entry.catalogName ||
+      row.landing_path === entry.path,
+  );
+  if (catalog) return catalog.catalogName;
+  // Preserve the existing historical interpretation of root-path Machos lots.
+  if (row.lot_number) return CATALOGS.machos.catalogName;
   return "Seleção de catálogos";
 }
 function catalogLabel(row: EventRow): string {
   const name = catalogName(row);
-  return name === CATALOGS.femeas.catalogName
-    ? "Fêmeas Elite"
-    : name === CATALOGS.machos.catalogName
-      ? "Machos"
-      : name;
+  return Object.values(CATALOGS).find((entry) => entry.catalogName === name)?.label ?? name;
 }
 function lotIdentity(row: EventRow): string {
   return `${catalogLabel(row)} / ${lotLabel(row.lot_number ?? "")}`;
@@ -417,6 +410,7 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [exp, setExp] = useState<Experience>("all");
+  const [fCatalog, setFCatalog] = useState("");
   const [fSource, setFSource] = useState("");
   const [fCampaign, setFCampaign] = useState("");
   const [fTerm, setFTerm] = useState("");
@@ -488,6 +482,7 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
     const q = lotSearch.trim().toLowerCase();
     return periodRows.filter((r) => {
       if (exp !== "all" && experienceOf(r) !== exp) return false;
+      if (fCatalog && (experienceOf(r) !== "catalog" || catalogLabel(r) !== fCatalog)) return false;
       if (fSource && label(r.traffic_source, "Direto / Desconhecido") !== fSource) return false;
       if (fCampaign && label(r.utm_campaign, "Sem campanha identificada") !== fCampaign)
         return false;
@@ -502,7 +497,19 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
       }
       return true;
     });
-  }, [periodRows, exp, fSource, fCampaign, fTerm, fContent, fDevice, fEvent, fLot, lotSearch]);
+  }, [
+    periodRows,
+    exp,
+    fCatalog,
+    fSource,
+    fCampaign,
+    fTerm,
+    fContent,
+    fDevice,
+    fEvent,
+    fLot,
+    lotSearch,
+  ]);
 
   useEffect(() => {
     setPage(0);
@@ -1087,6 +1094,12 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
 
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <Select
+              value={fCatalog}
+              onChange={setFCatalog}
+              placeholder="Catálogo"
+              options={Object.values(CATALOGS).map((entry) => entry.label)}
+            />
+            <Select
               value={fSource}
               onChange={setFSource}
               placeholder="Origem"
@@ -1536,6 +1549,9 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
                 </span>
                 <span>
                   {EVENT_LABELS[row.event_type] ?? row.event_type}
+                  {experienceOf(row) === "catalog" && !row.lot_number
+                    ? ` · ${catalogLabel(row)}`
+                    : ""}
                   {row.lot_number
                     ? ` · ${lotIdentity(row)}${row.horse_name ? ` — ${row.horse_name}` : ""}`
                     : ""}

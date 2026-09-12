@@ -502,5 +502,164 @@
     "video_url": "https://youtu.be/test",
     "catalog_key": "machos",
     "accept": false
+  },
+  {
+    "event_type": "page_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "lot_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_whatsapp_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "pdf_download",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": true
+  },
+  {
+    "event_type": "catalog_selector_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "machos",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "lot_number": null,
+    "horse_name": "Test animal",
+    "video_url": "https://youtu.be/test",
+    "catalog_key": "matrizes",
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "lot_number": "102",
+    "horse_name": null,
+    "video_url": "https://youtu.be/test",
+    "catalog_key": "matrizes",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_video_click",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "video_url": null,
+    "catalog_key": "matrizes",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": "matrizes",
+    "accept": true
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/matrizes",
+    "catalog_key": "machos",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/machos",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "accept": false
+  },
+  {
+    "event_type": "lot_view",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026/femeas",
+    "catalog_key": "matrizes",
+    "lot_number": "102",
+    "horse_name": "Test animal",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": "__proto__",
+    "accept": false
+  },
+  {
+    "event_type": "catalog_selected",
+    "landing_path": "/catalago/leilao-martendal-weekend-2026",
+    "catalog_key": "constructor",
+    "accept": false
   }
 ]

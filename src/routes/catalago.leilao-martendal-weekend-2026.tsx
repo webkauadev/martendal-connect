@@ -10,7 +10,7 @@ export const Route = createFileRoute("/catalago/leilao-martendal-weekend-2026")(
   head: () =>
     catalogHead({
       title: "Catálogos | Martendal Weekend 2026",
-      description: "Escolha o catálogo Machos ou Fêmeas Elite do Martendal Weekend 2026.",
+      description: "Escolha o catálogo que deseja explorar no Martendal Weekend 2026.",
       path: CATALOG_BASE_PATH,
       ogImage: MACHOS_CATALOG.ogImage,
     }),
@@ -51,13 +51,8 @@ function CatalogSelector() {
               trackInternalEvent("catalog_selected", { catalog_key: catalog.catalogKey });
             }}
           >
-            <span className="cat-kicker">
-              {catalog.catalogKey === "machos" ? "12 de setembro" : "11 de setembro"}
-            </span>
-            <h2>{catalog.catalogKey === "machos" ? "Machos" : "Fêmeas Elite"}</h2>
-            <span className="cat-sub">
-              {catalog.catalogKey === "machos" ? "Quarto de Milha" : "Seleção de elite"}
-            </span>
+            <span className="cat-kicker">{catalog.date}</span>
+            <h2>{catalog.heading}</h2>
             <span className="cat-select-action">Explorar catálogo →</span>
           </a>
         ))}

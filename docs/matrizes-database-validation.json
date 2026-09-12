@@ -1,0 +1,2295 @@
+{
+  "project": "xvmuxskticslavzdkczf",
+  "migration": "20260911154720_add_matrizes_catalog_tracking",
+  "baselineCapturedAt": "2026-09-11T15:31:03.634957+00:00",
+  "historyScope": "All baseline rows; subsequent comparisons restricted to created_at <= baselineCapturedAt",
+  "historyBefore": {
+    "count": 5965,
+    "checksum": "b1f9146ab966a78a5df2a7181c92c9e5"
+  },
+  "historyAfterRollback": {
+    "count": 5965,
+    "checksum": "b1f9146ab966a78a5df2a7181c92c9e5"
+  },
+  "historyAfterApply": {
+    "count": 5965,
+    "checksum": "b1f9146ab966a78a5df2a7181c92c9e5"
+  },
+  "checksumSQL": "md5(coalesce(string_agg(to_jsonb(t)::text, '' ORDER BY id), ''))",
+  "transactionCases": 76,
+  "syntheticRemaining": 0,
+  "unchanged": {
+    "indexes": {
+      "afterRollback": true,
+      "afterApply": true
+    },
+    "grants": {
+      "afterRollback": true,
+      "afterApply": true
+    },
+    "column_grants": {
+      "afterRollback": true,
+      "afterApply": true
+    },
+    "policies": {
+      "afterRollback": true,
+      "afterApply": true
+    },
+    "rls": {
+      "afterRollback": true,
+      "afterApply": true
+    },
+    "triggers": {
+      "afterRollback": true,
+      "afterApply": true
+    }
+  },
+  "functionPrivilegesUnchanged": true,
+  "constraintsBefore": [
+    {
+      "name": "martendal_tracking_catalog_key_check",
+      "definition": "CHECK (((catalog_key IS NULL) OR (catalog_key = ANY (ARRAY['machos'::text, 'femeas'::text]))))"
+    },
+    {
+      "name": "martendal_tracking_event_contract",
+      "definition": "CHECK ((((device_type = ANY (ARRAY['Mobile'::text, 'Tablet'::text, 'Desktop'::text, 'Unknown'::text])) AND (((landing_path = '/leilao-martendal-weekend-2026'::text) AND (experience_type = 'squeeze'::text) AND (catalog_name IS NULL) AND (catalog_key IS NULL) AND (event_type = ANY (ARRAY['page_view'::text, 'whatsapp_click'::text]))) OR ((landing_path = '/catalago/leilao-martendal-weekend-2026'::text) AND (experience_type = 'catalog'::text) AND (catalog_name IS NULL) AND (((event_type = 'catalog_selector_view'::text) AND (catalog_key IS NULL)) OR ((event_type = 'catalog_selected'::text) AND (catalog_key IS NOT NULL) AND (catalog_key = ANY (ARRAY['machos'::text, 'femeas'::text]))))) OR ((experience_type = 'catalog'::text) AND (event_type = ANY (ARRAY['catalog_view'::text, 'lot_view'::text, 'lot_whatsapp_click'::text, 'catalog_whatsapp_click'::text, 'catalog_video_click'::text, 'pdf_download'::text])) AND (((landing_path = '/catalago/leilao-martendal-weekend-2026/machos'::text) AND (catalog_name = 'Quarto de Milha - Martendal Weekend 2026'::text) AND (catalog_key = 'machos'::text)) OR ((landing_path = '/catalago/leilao-martendal-weekend-2026/femeas'::text) AND (catalog_name = 'Fêmeas Elite - Martendal Weekend 2026'::text) AND (catalog_key = 'femeas'::text)) OR ((landing_path = '/catalago/leilao-martendal-weekend-2026'::text) AND (catalog_name = 'Quarto de Milha - Martendal Weekend 2026'::text) AND (catalog_key IS NULL))))) AND ((event_type <> ALL (ARRAY['lot_view'::text, 'lot_whatsapp_click'::text, 'catalog_video_click'::text])) OR ((lot_number IS NOT NULL) AND (horse_name IS NOT NULL))) AND ((event_type <> 'catalog_video_click'::text) OR (video_url IS NOT NULL))) IS TRUE))"
+    },
+    {
+      "name": "martendal_tracking_events_event_type_check",
+      "definition": "CHECK ((event_type = ANY (ARRAY['page_view'::text, 'whatsapp_click'::text, 'catalog_view'::text, 'lot_view'::text, 'lot_whatsapp_click'::text, 'catalog_whatsapp_click'::text, 'catalog_video_click'::text, 'pdf_download'::text, 'catalog_selector_view'::text, 'catalog_selected'::text])))"
+    },
+    {
+      "name": "martendal_tracking_events_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "martendal_tracking_payload_lengths",
+      "definition": "CHECK ((((session_id IS NULL) OR (char_length(session_id) <= 80)) AND ((utm_source IS NULL) OR (char_length(utm_source) <= 300)) AND ((utm_medium IS NULL) OR (char_length(utm_medium) <= 300)) AND ((utm_campaign IS NULL) OR (char_length(utm_campaign) <= 300)) AND ((utm_content IS NULL) OR (char_length(utm_content) <= 300)) AND ((utm_term IS NULL) OR (char_length(utm_term) <= 300)) AND ((campaign_id IS NULL) OR (char_length(campaign_id) <= 80)) AND ((adset_id IS NULL) OR (char_length(adset_id) <= 80)) AND ((ad_id IS NULL) OR (char_length(ad_id) <= 80)) AND ((traffic_source IS NULL) OR (char_length(traffic_source) <= 80)) AND ((referrer IS NULL) OR (char_length(referrer) <= 300)) AND ((landing_path IS NULL) OR (char_length(landing_path) <= 200)) AND ((device_type IS NULL) OR (char_length(device_type) <= 20)) AND ((lot_number IS NULL) OR (char_length(lot_number) <= 20)) AND ((horse_name IS NULL) OR (char_length(horse_name) <= 120)) AND ((video_url IS NULL) OR (char_length(video_url) <= 300)) AND ((catalog_name IS NULL) OR (char_length(catalog_name) <= 120)) AND ((experience_type IS NULL) OR (experience_type = ANY (ARRAY['squeeze'::text, 'catalog'::text])))))"
+    }
+  ],
+  "constraintsAfter": [
+    {
+      "name": "martendal_tracking_catalog_key_check",
+      "definition": "CHECK (((catalog_key IS NULL) OR (catalog_key = ANY (ARRAY['machos'::text, 'femeas'::text, 'matrizes'::text]))))"
+    },
+    {
+      "name": "martendal_tracking_event_contract",
+      "definition": "CHECK ((((device_type = ANY (ARRAY['Mobile'::text, 'Tablet'::text, 'Desktop'::text, 'Unknown'::text])) AND (((landing_path = '/leilao-martendal-weekend-2026'::text) AND (experience_type = 'squeeze'::text) AND (catalog_name IS NULL) AND (catalog_key IS NULL) AND (event_type = ANY (ARRAY['page_view'::text, 'whatsapp_click'::text]))) OR ((landing_path = '/catalago/leilao-martendal-weekend-2026'::text) AND (experience_type = 'catalog'::text) AND (catalog_name IS NULL) AND (((event_type = 'catalog_selector_view'::text) AND (catalog_key IS NULL)) OR ((event_type = 'catalog_selected'::text) AND (catalog_key IS NOT NULL) AND (catalog_key = ANY (ARRAY['machos'::text, 'femeas'::text, 'matrizes'::text]))))) OR ((experience_type = 'catalog'::text) AND (event_type = ANY (ARRAY['catalog_view'::text, 'lot_view'::text, 'lot_whatsapp_click'::text, 'catalog_whatsapp_click'::text, 'catalog_video_click'::text, 'pdf_download'::text])) AND (((landing_path = '/catalago/leilao-martendal-weekend-2026/machos'::text) AND (catalog_name = 'Quarto de Milha - Martendal Weekend 2026'::text) AND (catalog_key = 'machos'::text)) OR ((landing_path = '/catalago/leilao-martendal-weekend-2026/femeas'::text) AND (catalog_name = 'Fêmeas Elite - Martendal Weekend 2026'::text) AND (catalog_key = 'femeas'::text)) OR ((landing_path = '/catalago/leilao-martendal-weekend-2026/matrizes'::text) AND (catalog_name = 'Matrizes - Martendal Weekend 2026'::text) AND (catalog_key = 'matrizes'::text)) OR ((landing_path = '/catalago/leilao-martendal-weekend-2026'::text) AND (catalog_name = 'Quarto de Milha - Martendal Weekend 2026'::text) AND (catalog_key IS NULL))))) AND ((event_type <> ALL (ARRAY['lot_view'::text, 'lot_whatsapp_click'::text, 'catalog_video_click'::text])) OR ((lot_number IS NOT NULL) AND (horse_name IS NOT NULL))) AND ((event_type <> 'catalog_video_click'::text) OR (video_url IS NOT NULL))) IS TRUE))"
+    },
+    {
+      "name": "martendal_tracking_events_event_type_check",
+      "definition": "CHECK ((event_type = ANY (ARRAY['page_view'::text, 'whatsapp_click'::text, 'catalog_view'::text, 'lot_view'::text, 'lot_whatsapp_click'::text, 'catalog_whatsapp_click'::text, 'catalog_video_click'::text, 'pdf_download'::text, 'catalog_selector_view'::text, 'catalog_selected'::text])))"
+    },
+    {
+      "name": "martendal_tracking_events_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "martendal_tracking_payload_lengths",
+      "definition": "CHECK ((((session_id IS NULL) OR (char_length(session_id) <= 80)) AND ((utm_source IS NULL) OR (char_length(utm_source) <= 300)) AND ((utm_medium IS NULL) OR (char_length(utm_medium) <= 300)) AND ((utm_campaign IS NULL) OR (char_length(utm_campaign) <= 300)) AND ((utm_content IS NULL) OR (char_length(utm_content) <= 300)) AND ((utm_term IS NULL) OR (char_length(utm_term) <= 300)) AND ((campaign_id IS NULL) OR (char_length(campaign_id) <= 80)) AND ((adset_id IS NULL) OR (char_length(adset_id) <= 80)) AND ((ad_id IS NULL) OR (char_length(ad_id) <= 80)) AND ((traffic_source IS NULL) OR (char_length(traffic_source) <= 80)) AND ((referrer IS NULL) OR (char_length(referrer) <= 300)) AND ((landing_path IS NULL) OR (char_length(landing_path) <= 200)) AND ((device_type IS NULL) OR (char_length(device_type) <= 20)) AND ((lot_number IS NULL) OR (char_length(lot_number) <= 20)) AND ((horse_name IS NULL) OR (char_length(horse_name) <= 120)) AND ((video_url IS NULL) OR (char_length(video_url) <= 300)) AND ((catalog_name IS NULL) OR (char_length(catalog_name) <= 120)) AND ((experience_type IS NULL) OR (experience_type = ANY (ARRAY['squeeze'::text, 'catalog'::text])))))"
+    }
+  ],
+  "securityBefore": {
+    "indexes": [
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_campaign_idx ON public.martendal_tracking_events USING btree (utm_campaign)",
+        "indexname": "martendal_tracking_events_campaign_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_created_at_idx ON public.martendal_tracking_events USING btree (created_at DESC)",
+        "indexname": "martendal_tracking_events_created_at_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_event_type_idx ON public.martendal_tracking_events USING btree (event_type)",
+        "indexname": "martendal_tracking_events_event_type_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_experience_idx ON public.martendal_tracking_events USING btree (experience_type, created_at DESC)",
+        "indexname": "martendal_tracking_events_experience_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_landing_idx ON public.martendal_tracking_events USING btree (landing_path)",
+        "indexname": "martendal_tracking_events_landing_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_lot_idx ON public.martendal_tracking_events USING btree (lot_number)",
+        "indexname": "martendal_tracking_events_lot_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE UNIQUE INDEX martendal_tracking_events_pkey ON public.martendal_tracking_events USING btree (id)",
+        "indexname": "martendal_tracking_events_pkey",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_session_idx ON public.martendal_tracking_events USING btree (session_id)",
+        "indexname": "martendal_tracking_events_session_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE INDEX martendal_tracking_events_source_idx ON public.martendal_tracking_events USING btree (traffic_source)",
+        "indexname": "martendal_tracking_events_source_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      },
+      {
+        "indexdef": "CREATE UNIQUE INDEX martendal_tracking_events_unique_lot_view_session_idx ON public.martendal_tracking_events USING btree (session_id, catalog_name, lot_number) WHERE (event_type = 'lot_view'::text)",
+        "indexname": "martendal_tracking_events_unique_lot_view_session_idx",
+        "tablename": "martendal_tracking_events",
+        "schemaname": "public",
+        "tablespace": null
+      }
+    ],
+    "grants": [
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "DELETE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT",
+        "with_hierarchy": "YES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRIGGER",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "TRUNCATE",
+        "with_hierarchy": "NO"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE",
+        "with_hierarchy": "NO"
+      }
+    ],
+    "column_grants": [
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "anon",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "postgres",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "YES",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "ad_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "adset_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "campaign_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_key",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "catalog_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "created_at",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "device_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "event_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "experience_type",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "horse_name",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "landing_path",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "lot_number",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "referrer",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "session_id",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "traffic_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_campaign",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_content",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_medium",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_source",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "utm_term",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "INSERT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "REFERENCES"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "SELECT"
+      },
+      {
+        "grantee": "service_role",
+        "grantor": "postgres",
+        "table_name": "martendal_tracking_events",
+        "column_name": "video_url",
+        "is_grantable": "NO",
+        "table_schema": "public",
+        "table_catalog": "postgres",
+        "privilege_type": "UPDATE"
+      }
+    ],
+    "policies": [
+      {
+        "cmd": "INSERT",
+        "qual": null,
+        "roles": [
+          "anon"
+        ],
+        "tablename": "martendal_tracking_events",
+        "permissive": "PERMISSIVE",
+        "policyname": "anon can insert tracking events",
+        "schemaname": "public",
+        "with_check": "true"
+      }
+    ],
+    "rls": {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "forced": false,
+      "enabled": true
+    },
+    "triggers": [
+      "CREATE TRIGGER martendal_set_experience_type_trg BEFORE INSERT ON public.martendal_tracking_events FOR EACH ROW EXECUTE FUNCTION martendal_set_experience_type()"
+    ]
+  }
+}

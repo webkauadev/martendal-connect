@@ -71,6 +71,7 @@ export function CatalogPage({ config }: { config: CatalogConfig }) {
     return lots.filter(
       (l) =>
         l.animalName.toLowerCase().includes(q) ||
+        l.animalNames?.some((name) => name.toLowerCase().includes(q)) ||
         l.lotNumber.toLowerCase().includes(q) ||
         String(Number(l.lotNumber)) === q ||
         l.owner.toLowerCase().includes(q),

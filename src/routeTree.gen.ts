@@ -20,6 +20,7 @@ import { Route as ApiPanelSessionRouteImport } from './routes/api/panel/session'
 import { Route as ApiPublicTrackRouteImport } from './routes/api/public/track'
 import { Route as CatalagoLeilaoMartendalWeekend2026FemeasRouteImport } from './routes/catalago.leilao-martendal-weekend-2026_.femeas'
 import { Route as CatalagoLeilaoMartendalWeekend2026MachosRouteImport } from './routes/catalago.leilao-martendal-weekend-2026_.machos'
+import { Route as CatalagoLeilaoMartendalWeekend2026MatrizesRouteImport } from './routes/catalago.leilao-martendal-weekend-2026_.matrizes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -80,6 +81,12 @@ const CatalagoLeilaoMartendalWeekend2026MachosRoute =
     path: '/catalago/leilao-martendal-weekend-2026/machos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CatalagoLeilaoMartendalWeekend2026MatrizesRoute =
+  CatalagoLeilaoMartendalWeekend2026MatrizesRouteImport.update({
+    id: '/catalago/leilao-martendal-weekend-2026_/matrizes',
+    path: '/catalago/leilao-martendal-weekend-2026/matrizes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/api/public/track': typeof ApiPublicTrackRoute
   '/catalago/leilao-martendal-weekend-2026/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   '/catalago/leilao-martendal-weekend-2026/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
+  '/catalago/leilao-martendal-weekend-2026/matrizes': typeof CatalagoLeilaoMartendalWeekend2026MatrizesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
   '/api/public/track': typeof ApiPublicTrackRoute
   '/catalago/leilao-martendal-weekend-2026/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   '/catalago/leilao-martendal-weekend-2026/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
+  '/catalago/leilao-martendal-weekend-2026/matrizes': typeof CatalagoLeilaoMartendalWeekend2026MatrizesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,6 +129,7 @@ export interface FileRoutesById {
   '/api/public/track': typeof ApiPublicTrackRoute
   '/catalago/leilao-martendal-weekend-2026_/femeas': typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   '/catalago/leilao-martendal-weekend-2026_/machos': typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
+  '/catalago/leilao-martendal-weekend-2026_/matrizes': typeof CatalagoLeilaoMartendalWeekend2026MatrizesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/api/public/track'
     | '/catalago/leilao-martendal-weekend-2026/femeas'
     | '/catalago/leilao-martendal-weekend-2026/machos'
+    | '/catalago/leilao-martendal-weekend-2026/matrizes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/api/public/track'
     | '/catalago/leilao-martendal-weekend-2026/femeas'
     | '/catalago/leilao-martendal-weekend-2026/machos'
+    | '/catalago/leilao-martendal-weekend-2026/matrizes'
   id:
     | '__root__'
     | '/'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
     | '/api/public/track'
     | '/catalago/leilao-martendal-weekend-2026_/femeas'
     | '/catalago/leilao-martendal-weekend-2026_/machos'
+    | '/catalago/leilao-martendal-weekend-2026_/matrizes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -175,6 +188,7 @@ export interface RootRouteChildren {
   ApiPublicTrackRoute: typeof ApiPublicTrackRoute
   CatalagoLeilaoMartendalWeekend2026FemeasRoute: typeof CatalagoLeilaoMartendalWeekend2026FemeasRoute
   CatalagoLeilaoMartendalWeekend2026MachosRoute: typeof CatalagoLeilaoMartendalWeekend2026MachosRoute
+  CatalagoLeilaoMartendalWeekend2026MatrizesRoute: typeof CatalagoLeilaoMartendalWeekend2026MatrizesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -256,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CatalagoLeilaoMartendalWeekend2026MachosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalago/leilao-martendal-weekend-2026_/matrizes': {
+      id: '/catalago/leilao-martendal-weekend-2026_/matrizes'
+      path: '/catalago/leilao-martendal-weekend-2026/matrizes'
+      fullPath: '/catalago/leilao-martendal-weekend-2026/matrizes'
+      preLoaderRoute: typeof CatalagoLeilaoMartendalWeekend2026MatrizesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -274,6 +295,8 @@ const rootRouteChildren: RootRouteChildren = {
     CatalagoLeilaoMartendalWeekend2026FemeasRoute,
   CatalagoLeilaoMartendalWeekend2026MachosRoute:
     CatalagoLeilaoMartendalWeekend2026MachosRoute,
+  CatalagoLeilaoMartendalWeekend2026MatrizesRoute:
+    CatalagoLeilaoMartendalWeekend2026MatrizesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

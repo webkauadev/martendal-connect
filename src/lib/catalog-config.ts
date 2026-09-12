@@ -7,10 +7,12 @@ import {
   PAGE_WIDTH,
 } from "./catalog-data";
 import { FEMEAS_LOTS } from "./catalog-femeas-data";
+import { MATRIZES_LOTS } from "./catalog-matrizes-data";
 import { CATALOGS, type CatalogContext } from "./catalog-tracking-contract";
 export type CatalogItem = {
   lotNumber: string;
   animalName: string;
+  animalNames?: string[];
   owner: string;
   pages: string[];
   videoUrl: string | null;
@@ -33,8 +35,6 @@ export const MACHOS_CATALOG: CatalogConfig = {
   title: "Catálogo Quarto de Milha | Martendal Weekend 2026",
   description:
     "Catálogo digital do Leilão Martendal Weekend 2026 - Quarto de Milha, 12 de setembro, Vilhena/RO. Veja os lotes, vídeos e fale com Bárbara pelo WhatsApp.",
-  heading: "Quarto de Milha",
-  date: "12 de setembro",
   cover: CATALOG_COVER,
   ogImage: CATALOG_OG_IMAGE,
   introPages: [],
@@ -48,13 +48,24 @@ export const FEMEAS_CATALOG: CatalogConfig = {
   title: "Catálogo Fêmeas Elite | Martendal Weekend 2026",
   description:
     "Catálogo digital Fêmeas Elite do Leilão Martendal Weekend 2026, 11 de setembro, em Vilhena/RO. Veja os lotes, vídeos e fale com Bárbara pelo WhatsApp.",
-  heading: "Fêmeas Elite",
-  date: "11 de setembro",
   cover: "/catalogo-femeas/p01.webp",
   ogImage: "/catalogo-femeas/og.webp",
   introPages: ["/catalogo-femeas/p02.webp", "/catalogo-femeas/p03.webp"],
   lots: FEMEAS_LOTS,
   extraPages: [31, 32, 33, 34, 35].map((page) => `/catalogo-femeas/p${page}.webp`),
+  pageWidth: 1080,
+  pageHeight: 1920,
+};
+export const MATRIZES_CATALOG: CatalogConfig = {
+  ...CATALOGS.matrizes,
+  title: "Catálogo de Matrizes | Martendal Weekend 2026",
+  description:
+    "Catálogo digital de Matrizes do Leilão Martendal Weekend 2026, 13 de setembro, em Vilhena/RO. Veja os lotes, vídeos e fale com Bárbara pelo WhatsApp.",
+  cover: "/catalogo-matrizes/p01.webp",
+  ogImage: "/catalogo-matrizes/og.webp",
+  introPages: ["/catalogo-matrizes/p02.webp"],
+  lots: MATRIZES_LOTS,
+  extraPages: [170, 171, 172, 173, 174].map((page) => `/catalogo-matrizes/p${page}.webp`),
   pageWidth: 1080,
   pageHeight: 1920,
 };

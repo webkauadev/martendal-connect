@@ -66,6 +66,8 @@ export const Route = createFileRoute("/api/public/track")({
           if (!eventAllowedAtPath(eventType, landingPath)) return jsonResponse(400, false);
           const catalog = catalogForPath(landingPath);
           const selectedKey = body["catalog_key"];
+          if (catalog && selectedKey != null && selectedKey !== catalog.catalogKey)
+            return jsonResponse(400, false);
           if (eventType === "catalog_selected" && !isCatalogKey(selectedKey))
             return jsonResponse(400, false);
           if (eventType === "catalog_selector_view" && selectedKey != null)

@@ -5,17 +5,34 @@ export const CATALOGS = {
     catalogKey: "machos",
     catalogName: "Quarto de Milha - Martendal Weekend 2026",
     path: `${CATALOG_BASE_PATH}/machos`,
+    label: "Machos",
+    heading: "Quarto de Milha",
+    date: "12 de setembro",
+    whatsappContext: "catálogo do",
   },
   femeas: {
     catalogKey: "femeas",
     catalogName: "Fêmeas Elite - Martendal Weekend 2026",
     path: `${CATALOG_BASE_PATH}/femeas`,
+    label: "Fêmeas Elite",
+    heading: "Fêmeas Elite",
+    date: "11 de setembro",
+    whatsappContext: "catálogo Fêmeas Elite do",
+  },
+  matrizes: {
+    catalogKey: "matrizes",
+    catalogName: "Matrizes - Martendal Weekend 2026",
+    path: `${CATALOG_BASE_PATH}/matrizes`,
+    label: "Matrizes",
+    heading: "Matrizes",
+    date: "13 de setembro",
+    whatsappContext: "catálogo de Matrizes do",
   },
 } as const;
 export type CatalogKey = keyof typeof CATALOGS;
 export type CatalogContext = (typeof CATALOGS)[CatalogKey];
 export function isCatalogKey(value: unknown): value is CatalogKey {
-  return value === "machos" || value === "femeas";
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(CATALOGS, value);
 }
 export function catalogForPath(path: string): CatalogContext | null {
   return Object.values(CATALOGS).find((catalog) => catalog.path === path) ?? null;
