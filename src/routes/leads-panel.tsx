@@ -1,6 +1,6 @@
 import { CATALOGS } from "@/lib/catalog-tracking-contract";
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -13,11 +13,19 @@ import {
 } from "recharts";
 
 import {
-  panelGetTrackingEvents,
+  panelGetDashboard,
+  panelGetTrackingEventsPage,
+  panelExportUrl,
+  type Dashboard as DashboardData,
+  type EventPage,
+  type TrackingEvent as EventRow,
+  type DashboardFilters,
   panelLogin,
   panelLogout,
   panelSessionValid,
 } from "@/lib/panel-auth";
+
+import { panelLotLabel, panelPeriodFilters, type Period } from "@/lib/panel-data";
 
 const LOGO_URL = "/martendal-logo.jpg";
 
@@ -38,45 +46,7 @@ const EVENT_LABELS: Record<string, string> = {
   pdf_download: "Abriu o PDF do catálogo",
 };
 
-const VIEW_EVENTS = new Set(["page_view", "catalog_view"]);
 const CLICK_EVENTS = new Set(["whatsapp_click", "catalog_whatsapp_click", "lot_whatsapp_click"]);
-
-type EventType =
-  | "page_view"
-  | "whatsapp_click"
-  | "catalog_view"
-  | "lot_view"
-  | "lot_whatsapp_click"
-  | "catalog_whatsapp_click"
-  | "catalog_video_click"
-  | "pdf_download"
-  | "catalog_selector_view"
-  | "catalog_selected";
-
-type EventRow = {
-  id: string;
-  event_type: EventType;
-  lot_number: string | null;
-  horse_name: string | null;
-  video_url: string | null;
-  catalog_name: string | null;
-  catalog_key: string | null;
-  experience_type: string | null;
-  created_at: string;
-  session_id: string | null;
-  utm_source: string | null;
-  utm_medium: string | null;
-  utm_campaign: string | null;
-  utm_content: string | null;
-  utm_term: string | null;
-  campaign_id: string | null;
-  adset_id: string | null;
-  ad_id: string | null;
-  traffic_source: string | null;
-  referrer: string | null;
-  landing_path: string | null;
-  device_type: string | null;
-};
 
 export const Route = createFileRoute("/leads-panel")({
   ssr: false,
@@ -112,15 +82,6 @@ const timeFmt = new Intl.DateTimeFormat("pt-BR", {
 function formatDateTime(iso: string): string {
   return dateFmt.format(new Date(iso)).replace(",", "");
 }
-
-function dayKey(iso: string): string {
-  return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: TZ,
-    day: "2-digit",
-    month: "2-digit",
-  }).format(new Date(iso));
-}
-
 function pct(value: number): string {
   return `${value.toFixed(1).replace(".", ",")}%`;
 }
@@ -270,7 +231,6 @@ function LoginScreen({ onSignedIn }: { onSignedIn: () => void }) {
 // Dashboard
 // ------------------------------------------------------------------
 
-type Period = "today" | "yesterday" | "7d" | "all" | "custom";
 type Experience = "all" | "squeeze" | "catalog";
 
 type GroupStats = {
@@ -311,100 +271,22 @@ type LotStats = {
   videoUrl: string | null;
 };
 
-function startOfDayTz(offsetDays: number): Date {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-  const base = new Date(`${parts}T00:00:00-04:00`);
-  base.setDate(base.getDate() + offsetDays);
-  return base;
-}
-
-function groupBy(rows: EventRow[], pick: (r: EventRow) => string): GroupStats[] {
-  const map = new Map<
-    string,
-    { views: number; clicks: number; vs: Set<string>; cs: Set<string> }
-  >();
-  for (const row of rows) {
-    const key = pick(row);
-    let entry = map.get(key);
-    if (!entry) {
-      entry = { views: 0, clicks: 0, vs: new Set(), cs: new Set() };
-      map.set(key, entry);
-    }
-    if (VIEW_EVENTS.has(row.event_type)) {
-      entry.views += 1;
-      entry.vs.add(sid(row));
-    } else if (CLICK_EVENTS.has(row.event_type)) {
-      entry.clicks += 1;
-      entry.cs.add(sid(row));
-    }
-  }
-  return [...map.entries()]
-    .map(([key, v]) => ({
-      key,
-      views: v.views,
-      uniques: v.vs.size,
-      clicks: v.clicks,
-      rate: v.vs.size ? (v.cs.size / v.vs.size) * 100 : 0,
-    }))
-    .sort((a, b) => b.clicks - a.clicks || b.views - a.views);
-}
-
-function groupCatalogBy(rows: EventRow[], pick: (r: EventRow) => string): CatalogGroupStats[] {
-  const map = new Map<
-    string,
-    {
-      sessions: Set<string>;
-      lotViews: Set<string>;
-      interested: Set<string>;
-      clicks: number;
-      clickSessions: Set<string>;
-    }
-  >();
-  for (const row of rows) {
-    const key = pick(row);
-    let entry = map.get(key);
-    if (!entry) {
-      entry = {
-        sessions: new Set(),
-        lotViews: new Set(),
-        interested: new Set(),
-        clicks: 0,
-        clickSessions: new Set(),
-      };
-      map.set(key, entry);
-    }
-    const session = sid(row);
-    entry.sessions.add(session);
-    if (row.event_type === "lot_view" && row.lot_number) {
-      entry.lotViews.add(`${session}:${lotIdentity(row)}`);
-    }
-    if (row.event_type === "lot_whatsapp_click") {
-      entry.interested.add(session);
-    }
-    if (CLICK_EVENTS.has(row.event_type)) {
-      entry.clicks += 1;
-      entry.clickSessions.add(session);
-    }
-  }
-  return [...map.entries()]
-    .map(([key, v]) => ({
-      key,
-      sessions: v.sessions.size,
-      lotViews: v.lotViews.size,
-      interested: v.interested.size,
-      clicks: v.clicks,
-      rate: v.sessions.size ? (v.clickSessions.size / v.sessions.size) * 100 : 0,
-    }))
-    .sort((a, b) => b.clicks - a.clicks || b.sessions - a.sessions);
-}
-
 function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
-  const [rows, setRows] = useState<EventRow[] | null>(null);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [recentEvents, setRecentEvents] = useState<EventPage | null>(null);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState<string | null>(null);
+  const [eventsCursors, setEventsCursors] = useState<EventPage["nextCursor"][]>([null]);
+  const eventsRequest = useRef(0);
+  const [refresh, setRefresh] = useState(0);
+  const [debouncedLotSearch, setDebouncedLotSearch] = useState("");
+  const [timelinePage, setTimelinePage] = useState<EventPage | null>(null);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [timelineError, setTimelineError] = useState<string | null>(null);
+  const [timelineCursors, setTimelineCursors] = useState<EventPage["nextCursor"][]>([null]);
+  const [timelineIndex, setTimelineIndex] = useState(0);
+  const timelineRequest = useRef(0);
+  const [lotKeys, setLotKeys] = useState<string[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [period, setPeriod] = useState<Period>("all");
   const [from, setFrom] = useState("");
@@ -425,302 +307,151 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
   const [openLot, setOpenLot] = useState<string | null>(null);
   const [timelineSession, setTimelineSession] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedLotSearch(lotSearch.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [lotSearch]);
+
+  const periodFilters = useMemo(
+    () => panelPeriodFilters(period, from, to),
+    // Recompute the local day when the user refreshes after midnight.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [period, from, to, refresh],
+  );
+  const filters: DashboardFilters = {
+    ...periodFilters,
+    ...(exp !== "all" ? { experience: exp } : {}),
+    catalog_key: Object.values(CATALOGS).find((c) => c.label === fCatalog)?.catalogKey ?? "",
+    source: fSource,
+    campaign: fCampaign,
+    term: fTerm,
+    content: fContent,
+    event: fEvent,
+    device: fDevice,
+    lot: lotKeys.find((key) => panelLotLabel(key) === fLot) ?? "",
+    search: debouncedLotSearch,
+  };
+  const filterKey = JSON.stringify(filters);
+  const activeFilters = useMemo<DashboardFilters>(
+    () => JSON.parse(filterKey) as DashboardFilters,
+    [filterKey],
+  );
+  const load = useCallback(() => setRefresh((value) => value + 1), []);
+
+  useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
-
-    const result = await panelGetTrackingEvents();
-
-    if (!result.ok) {
+    setLoadError(null);
+    void panelGetDashboard(activeFilters, controller.signal).then((result) => {
+      if (controller.signal.aborted) return;
+      setLoading(false);
       if (result.unauthorized) {
-        setLoading(false);
         onSignedOut();
         return;
       }
+      if (result.ok && result.dashboard) {
+        setDashboard(result.dashboard);
+        setLotKeys(result.dashboard.filter_options.lots);
+      } else setLoadError(result.error ?? "Não foi possível carregar os dados do painel.");
+    });
+    return () => controller.abort();
+  }, [activeFilters, refresh, onSignedOut]);
 
-      setLoadError(result.error ?? "Não foi possível carregar os dados do painel.");
-      setLoading(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    const request = ++eventsRequest.current;
+    setPage(0);
+    setEventsCursors([null]);
+    setRecentEvents(null);
+    setEventsLoading(true);
+    setEventsError(null);
+    void panelGetTrackingEventsPage(null, activeFilters, controller.signal).then((result) => {
+      if (controller.signal.aborted || request !== eventsRequest.current) return;
+      setEventsLoading(false);
+      if (result.unauthorized) {
+        onSignedOut();
+        return;
+      }
+      if (result.ok && result.page) setRecentEvents(result.page);
+      else setEventsError(result.error ?? "Não foi possível carregar os eventos.");
+    });
+    return () => {
+      controller.abort();
+      eventsRequest.current += 1;
+    };
+  }, [activeFilters, refresh, onSignedOut]);
+
+  async function changeEventsPage(nextPage: number) {
+    const cursor = nextPage > page ? recentEvents?.nextCursor : eventsCursors[nextPage];
+    if (nextPage < 0 || (nextPage > 0 && !cursor) || eventsLoading) return;
+    const request = ++eventsRequest.current;
+    setEventsLoading(true);
+    setEventsError(null);
+    const result = await panelGetTrackingEventsPage(cursor ?? null, activeFilters);
+    if (request !== eventsRequest.current) return;
+    setEventsLoading(false);
+    if (result.unauthorized) {
+      onSignedOut();
       return;
     }
-
-    setLoadError(null);
-    setRows(result.events as EventRow[]);
-    setLoading(false);
-  }, [onSignedOut]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const periodRows = useMemo(() => {
-    const all = rows ?? [];
-    if (period === "all") return all;
-    let start: Date | null = null;
-    let end: Date | null = null;
-    if (period === "today") start = startOfDayTz(0);
-    if (period === "yesterday") {
-      start = startOfDayTz(-1);
-      end = startOfDayTz(0);
-    }
-    if (period === "7d") start = startOfDayTz(-6);
-    if (period === "custom") {
-      if (from) start = new Date(`${from}T00:00:00-04:00`);
-      if (to) {
-        end = new Date(`${to}T00:00:00-04:00`);
-        end.setDate(end.getDate() + 1);
-      }
-    }
-    return all.filter((r) => {
-      const t = new Date(r.created_at).getTime();
-      if (start && t < start.getTime()) return false;
-      if (end && t >= end.getTime()) return false;
-      return true;
-    });
-  }, [rows, period, from, to]);
-
-  // Filtros comuns (experiência + segmentações)
-  const filtered = useMemo(() => {
-    const q = lotSearch.trim().toLowerCase();
-    return periodRows.filter((r) => {
-      if (exp !== "all" && experienceOf(r) !== exp) return false;
-      if (fCatalog && (experienceOf(r) !== "catalog" || catalogLabel(r) !== fCatalog)) return false;
-      if (fSource && label(r.traffic_source, "Direto / Desconhecido") !== fSource) return false;
-      if (fCampaign && label(r.utm_campaign, "Sem campanha identificada") !== fCampaign)
-        return false;
-      if (fTerm && label(r.utm_term, "Sem conjunto identificado") !== fTerm) return false;
-      if (fContent && label(r.utm_content, "Sem criativo identificado") !== fContent) return false;
-      if (fDevice && label(r.device_type, "Unknown") !== fDevice) return false;
-      if (fEvent && r.event_type !== fEvent) return false;
-      if (fLot && lotIdentity(r) !== fLot) return false;
-      if (q) {
-        const hay = `${r.lot_number ?? ""} ${r.horse_name ?? ""}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-  }, [
-    periodRows,
-    exp,
-    fCatalog,
-    fSource,
-    fCampaign,
-    fTerm,
-    fContent,
-    fDevice,
-    fEvent,
-    fLot,
-    lotSearch,
-  ]);
-
-  useEffect(() => {
-    setPage(0);
-  }, [filtered]);
-
+    if (result.ok && result.page) {
+      setRecentEvents(result.page);
+      setEventsCursors((previous) => [...previous.slice(0, nextPage), cursor ?? null]);
+      setPage(nextPage);
+    } else setEventsError(result.error ?? "Não foi possível carregar os eventos.");
+  }
   const showCatalog = exp !== "squeeze";
   const showSqueeze = exp !== "catalog";
-
-  const catalogRows = useMemo(
-    () => filtered.filter((r) => experienceOf(r) === "catalog"),
-    [filtered],
+  const ratio = (numerator = 0, denominator = 0) =>
+    denominator ? (100 * numerator) / denominator : 0;
+  const summary = dashboard?.summary;
+  const totals = {
+    views: summary?.accesses ?? 0,
+    uniques: summary?.uniques ?? 0,
+    clicks: summary?.clicks ?? 0,
+    clickSessions: summary?.click_sessions ?? 0,
+    rate: ratio(summary?.click_sessions, summary?.uniques),
+  };
+  const squeezeTotals = {
+    views: summary?.sq_accesses ?? 0,
+    uniques: summary?.sq_uniques ?? 0,
+    clicks: summary?.sq_clicks ?? 0,
+    clickSessions: summary?.sq_click_sessions ?? 0,
+    rate: ratio(summary?.sq_click_sessions, summary?.sq_uniques),
+  };
+  const catalogTotals = {
+    views: summary?.cat_accesses ?? 0,
+    sessions: summary?.cat_uniques ?? 0,
+    lotViewsUnique: summary?.unique_lot_views ?? 0,
+    lotViewsTotal: summary?.lot_views ?? 0,
+    lotViewSessions: summary?.lot_sessions ?? 0,
+    lotInterestUnique: summary?.interested_lots ?? 0,
+    interestSessions: summary?.interested_sessions ?? 0,
+    waClicks: summary?.cat_wa_clicks ?? 0,
+    waSessions: summary?.cat_wa_sessions ?? 0,
+    videos: summary?.video_clicks ?? 0,
+    videoSessions: summary?.video_sessions ?? 0,
+    pdfs: summary?.pdfs ?? 0,
+    interestRate: ratio(summary?.interested_sessions, summary?.lot_sessions),
+    advanceRate: ratio(summary?.cat_wa_sessions, summary?.cat_uniques),
+  };
+  // Presentation adapter: all counts and per-lot groups come from PostgreSQL.
+  const lotStats = useMemo<LotStats[]>(
+    () =>
+      (dashboard?.lots ?? []).map((lot) => ({
+        ...lot,
+        key: panelLotLabel(lot.key),
+        catalogName:
+          Object.values(CATALOGS).find((c) => c.catalogKey === lot.catalogKey)?.catalogName ??
+          "Seleção de catálogos",
+        horse: lot.horse ?? "—",
+        sources: new Map(Object.entries(lot.sources)),
+        devices: new Map(Object.entries(lot.devices)),
+        campaigns: new Map(Object.entries(lot.campaigns)),
+        contents: new Map(Object.entries(lot.contents)),
+      })),
+    [dashboard],
   );
-  const squeezeRows = useMemo(
-    () => filtered.filter((r) => experienceOf(r) === "squeeze"),
-    [filtered],
-  );
-
-  // ---- Cards gerais ----
-  const totals = useMemo(() => {
-    const views = filtered.filter((r) => VIEW_EVENTS.has(r.event_type));
-    const clicks = filtered.filter((r) => CLICK_EVENTS.has(r.event_type));
-    const viewSessions = new Set(views.map(sid));
-    const clickSessions = new Set(clicks.map(sid));
-    return {
-      views: views.length,
-      uniques: viewSessions.size,
-      clicks: clicks.length,
-      clickSessions: clickSessions.size,
-      rate: viewSessions.size ? (clickSessions.size / viewSessions.size) * 100 : 0,
-    };
-  }, [filtered]);
-
-  const squeezeTotals = useMemo(() => {
-    const views = squeezeRows.filter((r) => r.event_type === "page_view");
-    const clicks = squeezeRows.filter((r) => r.event_type === "whatsapp_click");
-    const vs = new Set(views.map(sid));
-    const cs = new Set(clicks.map(sid));
-    return {
-      views: views.length,
-      uniques: vs.size,
-      clicks: clicks.length,
-      clickSessions: cs.size,
-      rate: vs.size ? (cs.size / vs.size) * 100 : 0,
-    };
-  }, [squeezeRows]);
-
-  // ---- Catálogo ----
-  const catalogTotals = useMemo(() => {
-    const views = catalogRows.filter((r) => r.event_type === "catalog_view");
-    const sessions = new Set(views.map(sid));
-    const lotViewRows = catalogRows.filter((r) => r.event_type === "lot_view");
-    const lotViewUnique = new Set(
-      lotViewRows.filter((r) => r.lot_number).map((r) => `${sid(r)}:${lotIdentity(r)}`),
-    );
-    const lotViewSessions = new Set(lotViewRows.map(sid));
-    const lotClicks = catalogRows.filter((r) => r.event_type === "lot_whatsapp_click");
-    const lotInterestUnique = new Set(
-      lotClicks.filter((r) => r.lot_number).map((r) => `${sid(r)}:${lotIdentity(r)}`),
-    );
-    const interestSessions = new Set(lotClicks.map(sid));
-    const globalClicks = catalogRows.filter((r) => r.event_type === "catalog_whatsapp_click");
-    const videos = catalogRows.filter((r) => r.event_type === "catalog_video_click");
-    const videoSessions = new Set(videos.map(sid));
-    const pdfs = catalogRows.filter((r) => r.event_type === "pdf_download");
-    const waSessions = new Set([...lotClicks, ...globalClicks].map(sid));
-    return {
-      views: views.length,
-      sessions: sessions.size,
-      lotViewsUnique: lotViewUnique.size,
-      lotViewsTotal: lotViewRows.length,
-      lotViewSessions: lotViewSessions.size,
-      lotInterestUnique: lotInterestUnique.size,
-      interestSessions: interestSessions.size,
-      waClicks: lotClicks.length + globalClicks.length,
-      waSessions: waSessions.size,
-      videos: videos.length,
-      videoSessions: videoSessions.size,
-      pdfs: pdfs.length,
-      interestRate: lotViewSessions.size ? (interestSessions.size / lotViewSessions.size) * 100 : 0,
-      advanceRate: sessions.size ? (waSessions.size / sessions.size) * 100 : 0,
-    };
-  }, [catalogRows]);
-
-  const lotStats = useMemo<LotStats[]>(() => {
-    type Acc = {
-      key: string;
-      catalogName: string;
-      lot: string;
-      horse: string;
-      viewSessions: Set<string>;
-      totalViews: number;
-      videoClicks: number;
-      videoSessions: Set<string>;
-      waClicks: number;
-      interestSessions: Set<string>;
-      sources: Map<string, number>;
-      campaigns: Map<string, { views: number; interested: number; clicks: number }>;
-      contents: Map<string, { views: number; interested: number; clicks: number }>;
-      devices: Map<string, number>;
-      videoUrl: string | null;
-    };
-    const map = new Map<string, Acc>();
-    const bump = (m: Map<string, number>, key: string) => m.set(key, (m.get(key) ?? 0) + 1);
-    const bump3 = (
-      m: Map<string, { views: number; interested: number; clicks: number }>,
-      key: string,
-      field: "views" | "interested" | "clicks",
-    ) => {
-      const entry = m.get(key) ?? { views: 0, interested: 0, clicks: 0 };
-      entry[field] += 1;
-      m.set(key, entry);
-    };
-
-    for (const row of catalogRows) {
-      if (!row.lot_number) continue;
-      let acc = map.get(lotIdentity(row));
-      if (!acc) {
-        acc = {
-          key: lotIdentity(row),
-          catalogName: catalogName(row),
-          lot: row.lot_number,
-          horse: row.horse_name ?? "—",
-          viewSessions: new Set(),
-          totalViews: 0,
-          videoClicks: 0,
-          videoSessions: new Set(),
-          waClicks: 0,
-          interestSessions: new Set(),
-          sources: new Map(),
-          campaigns: new Map(),
-          contents: new Map(),
-          devices: new Map(),
-          videoUrl: null,
-        };
-        map.set(lotIdentity(row), acc);
-      }
-      if (row.horse_name) acc.horse = row.horse_name;
-      if (row.video_url) acc.videoUrl = row.video_url;
-      const session = sid(row);
-      const source = label(row.traffic_source, "Direto / Desconhecido");
-      const campaign = label(row.utm_campaign, "Sem campanha identificada");
-      const content = label(row.utm_content, "Sem criativo identificado");
-
-      if (row.event_type === "lot_view") {
-        acc.totalViews += 1;
-        acc.viewSessions.add(session);
-        bump(acc.sources, source);
-        bump(acc.devices, label(row.device_type, "Unknown"));
-        bump3(acc.campaigns, campaign, "views");
-        bump3(acc.contents, content, "views");
-      } else if (row.event_type === "lot_whatsapp_click") {
-        acc.waClicks += 1;
-        acc.interestSessions.add(session);
-        bump3(acc.campaigns, campaign, "clicks");
-        bump3(acc.contents, content, "clicks");
-      } else if (row.event_type === "catalog_video_click") {
-        acc.videoClicks += 1;
-        acc.videoSessions.add(session);
-      }
-    }
-
-    // interessados únicos por campanha/criativo (sessão distinta)
-    const seenCampaign = new Set<string>();
-    const seenContent = new Set<string>();
-    for (const row of catalogRows) {
-      if (row.event_type !== "lot_whatsapp_click" || !row.lot_number) continue;
-      const acc = map.get(lotIdentity(row));
-      if (!acc) continue;
-      const session = sid(row);
-      const campaign = label(row.utm_campaign, "Sem campanha identificada");
-      const content = label(row.utm_content, "Sem criativo identificado");
-      const ck = `${lotIdentity(row)}:${campaign}:${session}`;
-      if (!seenCampaign.has(ck)) {
-        seenCampaign.add(ck);
-        bump3(acc.campaigns, campaign, "interested");
-      }
-      const tk = `${lotIdentity(row)}:${content}:${session}`;
-      if (!seenContent.has(tk)) {
-        seenContent.add(tk);
-        bump3(acc.contents, content, "interested");
-      }
-    }
-
-    return [...map.values()].map((acc) => {
-      let videoThenWa = 0;
-      for (const session of acc.videoSessions) {
-        if (acc.interestSessions.has(session)) videoThenWa += 1;
-      }
-      const topSource = [...acc.sources.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
-      return {
-        key: acc.key,
-        catalogName: acc.catalogName,
-        lot: acc.lot,
-        horse: acc.horse,
-        uniqueViews: acc.viewSessions.size,
-        totalViews: acc.totalViews,
-        videoClicks: acc.videoClicks,
-        videoSessions: acc.videoSessions.size,
-        waClicks: acc.waClicks,
-        interested: acc.interestSessions.size,
-        videoThenWa,
-        rate: acc.viewSessions.size ? (acc.interestSessions.size / acc.viewSessions.size) * 100 : 0,
-        topSource,
-        sources: acc.sources,
-        campaigns: acc.campaigns,
-        contents: acc.contents,
-        devices: acc.devices,
-        videoUrl: acc.videoUrl,
-      };
-    });
-  }, [catalogRows]);
 
   const [sortKey, setSortKey] = useState<keyof LotStats>("uniqueViews");
 
@@ -751,164 +482,29 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
     [lotStats],
   );
 
-  const catalogFunnel = useMemo(() => {
-    const visitors = new Set(catalogRows.filter((r) => r.event_type === "catalog_view").map(sid));
-    const viewedLot = new Set(catalogRows.filter((r) => r.event_type === "lot_view").map(sid));
-    const video = new Set(
-      catalogRows.filter((r) => r.event_type === "catalog_video_click").map(sid),
-    );
-    const interest = new Set(
-      catalogRows.filter((r) => r.event_type === "lot_whatsapp_click").map(sid),
-    );
-    const whatsapp = new Set(
-      catalogRows
-        .filter(
-          (r) => r.event_type === "lot_whatsapp_click" || r.event_type === "catalog_whatsapp_click",
-        )
-        .map(sid),
-    );
-    return {
-      visitors: visitors.size,
-      viewedLot: viewedLot.size,
-      video: video.size,
-      interest: interest.size,
-      whatsapp: whatsapp.size,
-    };
-  }, [catalogRows]);
-
-  const catalogDaily = useMemo(() => {
-    const map = new Map<
-      string,
-      {
-        day: string;
-        ts: number;
-        visitantes: Set<string>;
-        lotes: Set<string>;
-        interesses: Set<string>;
-        whatsapp: number;
-      }
-    >();
-    for (const row of catalogRows) {
-      const key = dayKey(row.created_at);
-      const ts = new Date(row.created_at).getTime();
-      let entry = map.get(key);
-      if (!entry) {
-        entry = {
-          day: key,
-          ts,
-          visitantes: new Set(),
-          lotes: new Set(),
-          interesses: new Set(),
-          whatsapp: 0,
-        };
-        map.set(key, entry);
-      }
-      entry.ts = Math.min(entry.ts, ts);
-      const session = sid(row);
-      if (row.event_type === "catalog_view") entry.visitantes.add(session);
-      if (row.event_type === "lot_view" && row.lot_number) {
-        entry.lotes.add(`${session}:${lotIdentity(row)}`);
-      }
-      if (row.event_type === "lot_whatsapp_click" && row.lot_number) {
-        entry.interesses.add(`${session}:${lotIdentity(row)}`);
-      }
-      if (CLICK_EVENTS.has(row.event_type)) entry.whatsapp += 1;
-    }
-    return [...map.values()]
-      .sort((a, b) => a.ts - b.ts)
-      .map((e) => ({
-        day: e.day,
-        visitantes: e.visitantes.size,
-        lotes: e.lotes.size,
-        interesses: e.interesses.size,
-        whatsapp: e.whatsapp,
-      }));
-  }, [catalogRows]);
-
-  // ---- Agrupamentos gerais ----
-  const bySource = useMemo(
-    () => groupBy(filtered, (r) => label(r.traffic_source, "Direto / Desconhecido")),
-    [filtered],
-  );
-  const byCampaign = useMemo(
-    () => groupBy(filtered, (r) => label(r.utm_campaign, "Sem campanha identificada")),
-    [filtered],
-  );
-  const byTerm = useMemo(
-    () => groupBy(filtered, (r) => label(r.utm_term, "Sem conjunto identificado")),
-    [filtered],
-  );
-  const byContent = useMemo(
-    () => groupBy(filtered, (r) => label(r.utm_content, "Sem criativo identificado")),
-    [filtered],
-  );
-  const byUtmSource = useMemo(
-    () => groupBy(filtered, (r) => label(r.utm_source, "sem utm_source")),
-    [filtered],
-  );
-  const catalogBySource = useMemo(
-    () => groupCatalogBy(catalogRows, (r) => label(r.traffic_source, "Direto / Desconhecido")),
-    [catalogRows],
-  );
-  const catalogByCampaign = useMemo(
-    () => groupCatalogBy(catalogRows, (r) => label(r.utm_campaign, "Sem campanha identificada")),
-    [catalogRows],
-  );
-
-  const daily = useMemo(() => {
-    const map = new Map<string, { day: string; ts: number; acessos: number; cliques: number }>();
-    for (const row of filtered) {
-      const key = dayKey(row.created_at);
-      const ts = new Date(row.created_at).getTime();
-      let entry = map.get(key);
-      if (!entry) {
-        entry = { day: key, ts, acessos: 0, cliques: 0 };
-        map.set(key, entry);
-      }
-      entry.ts = Math.min(entry.ts, ts);
-      if (VIEW_EVENTS.has(row.event_type)) entry.acessos += 1;
-      else if (CLICK_EVENTS.has(row.event_type)) entry.cliques += 1;
-    }
-    return [...map.values()].sort((a, b) => a.ts - b.ts);
-  }, [filtered]);
-
-  const metaIds = useMemo(
-    () =>
-      groupBy(
-        filtered.filter((r) => r.campaign_id || r.adset_id || r.ad_id),
-        (r) => `${r.campaign_id ?? "-"} / ${r.adset_id ?? "-"} / ${r.ad_id ?? "-"}`,
-      ),
-    [filtered],
-  );
-
-  const options = useCallback(
-    (pick: (r: EventRow) => string) => [...new Set((rows ?? []).map(pick))].sort(),
-    [rows],
-  );
-  const sourceOptions = useMemo(
-    () => options((r) => label(r.traffic_source, "Direto / Desconhecido")),
-    [options],
-  );
-  const campaignOptions = useMemo(
-    () => options((r) => label(r.utm_campaign, "Sem campanha identificada")),
-    [options],
-  );
-  const termOptions = useMemo(
-    () => options((r) => label(r.utm_term, "Sem conjunto identificado")),
-    [options],
-  );
-  const contentOptions = useMemo(
-    () => options((r) => label(r.utm_content, "Sem criativo identificado")),
-    [options],
-  );
-  const deviceOptions = useMemo(() => options((r) => label(r.device_type, "Unknown")), [options]);
-  const lotOptions = useMemo(
-    () =>
-      [...new Set((rows ?? []).filter((r) => r.lot_number).map(lotIdentity))].sort((a, b) =>
-        a.localeCompare(b),
-      ),
-    [rows],
-  );
+  const catalogFunnel = {
+    visitors: catalogTotals.sessions,
+    viewedLot: catalogTotals.lotViewSessions,
+    video: catalogTotals.videoSessions,
+    interest: catalogTotals.interestSessions,
+    whatsapp: catalogTotals.waSessions,
+  };
+  const catalogDaily = dashboard?.catalog_timeseries ?? [];
+  const daily = dashboard?.timeseries ?? [];
+  const bySource = dashboard?.breakdowns["source"] ?? [];
+  const byCampaign = dashboard?.breakdowns["campaign"] ?? [];
+  const byTerm = dashboard?.breakdowns["term"] ?? [];
+  const byContent = dashboard?.breakdowns["content"] ?? [];
+  const byUtmSource = dashboard?.breakdowns["utm_source"] ?? [];
+  const metaIds = dashboard?.breakdowns["meta"] ?? [];
+  const catalogBySource = dashboard?.catalog_breakdowns.source ?? [];
+  const catalogByCampaign = dashboard?.catalog_breakdowns.campaign ?? [];
+  const sourceOptions = dashboard?.filter_options.sources ?? [];
+  const campaignOptions = dashboard?.filter_options.campaigns ?? [];
+  const termOptions = dashboard?.filter_options.terms ?? [];
+  const contentOptions = dashboard?.filter_options.contents ?? [];
+  const deviceOptions = dashboard?.filter_options.devices ?? [];
+  const lotOptions = lotKeys.map(panelLotLabel);
 
   const matchesSearch = useCallback(
     (value: string) => !search.trim() || value.toLowerCase().includes(search.trim().toLowerCase()),
@@ -920,65 +516,73 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
     [openLot, lotStats],
   );
 
-  const timelineRows = useMemo(() => {
-    if (!timelineSession) return [];
-    return periodRows
-      .filter((r) => sid(r) === timelineSession)
-      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  }, [timelineSession, periodRows]);
+  // Original timeline scope: the session in the selected period, independent of segmentation.
+  const timelineFilters = useMemo<DashboardFilters>(
+    () => ({
+      ...periodFilters,
+      session_id: timelineSession ?? "",
+    }),
+    [periodFilters, timelineSession],
+  );
+  useEffect(() => {
+    const controller = new AbortController();
+    const request = ++timelineRequest.current;
+    setTimelinePage(null);
+    setTimelineCursors([null]);
+    setTimelineIndex(0);
+    setTimelineError(null);
+    if (!timelineSession) return () => controller.abort();
+    setTimelineLoading(true);
+    void panelGetTrackingEventsPage(null, timelineFilters, controller.signal).then((result) => {
+      if (controller.signal.aborted || request !== timelineRequest.current) return;
+      setTimelineLoading(false);
+      if (result.unauthorized) {
+        onSignedOut();
+        return;
+      }
+      if (result.ok && result.page) setTimelinePage(result.page);
+      else setTimelineError(result.error ?? "Não foi possível carregar esta sessão.");
+    });
+    return () => {
+      controller.abort();
+      timelineRequest.current += 1;
+    };
+  }, [timelineSession, timelineFilters, onSignedOut]);
 
+  async function changeTimelinePage(nextIndex: number) {
+    const cursor =
+      nextIndex > timelineIndex ? timelinePage?.nextCursor : timelineCursors[nextIndex];
+    if (nextIndex < 0 || (nextIndex > 0 && !cursor) || timelineLoading) return;
+    const request = ++timelineRequest.current;
+    setTimelineLoading(true);
+    setTimelineError(null);
+    const result = await panelGetTrackingEventsPage(cursor ?? null, timelineFilters);
+    if (request !== timelineRequest.current) return;
+    setTimelineLoading(false);
+    if (result.unauthorized) {
+      onSignedOut();
+      return;
+    }
+    if (result.ok && result.page) {
+      setTimelinePage(result.page);
+      setTimelineCursors((previous) => [...previous.slice(0, nextIndex), cursor ?? null]);
+      setTimelineIndex(nextIndex);
+    } else setTimelineError(result.error ?? "Não foi possível carregar esta sessão.");
+  }
+  const timelineRows = [...(timelinePage?.events ?? [])].reverse();
   async function signOut() {
     await panelLogout();
     onSignedOut();
   }
-
   function exportCsv() {
-    const cols = [
-      "created_at",
-      "event_type",
-      "experience_type",
-      "landing_path",
-      "catalog_name",
-      "catalog_key",
-      "lot_number",
-      "horse_name",
-      "video_url",
-      "utm_source",
-      "utm_medium",
-      "utm_campaign",
-      "utm_content",
-      "utm_term",
-      "campaign_id",
-      "adset_id",
-      "ad_id",
-      "traffic_source",
-      "device_type",
-      "session_id",
-    ] as const;
-    const escape = (v: string | null) => `"${(v ?? "").replace(/"/g, '""')}"`;
-    const lines = [cols.join(",")];
-    for (const row of filtered) {
-      lines.push(
-        cols
-          .map((c) =>
-            escape(c === "experience_type" ? experienceOf(row) : (row[c] as string | null)),
-          )
-          .join(","),
-      );
-    }
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `martendal-${exp}-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const link = document.createElement("a");
+    link.href = panelExportUrl(activeFilters);
+    link.download = `martendal-${exp}.csv`;
+    link.click();
   }
-
-  const empty = filtered.length === 0;
-  const pageSize = 50;
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageRows = filtered.slice(page * pageSize, page * pageSize + pageSize);
+  const empty = dashboard !== null && dashboard.summary.total_events === 0;
+  const pageRows = recentEvents?.events ?? [];
+  const pageCount = Math.max(1, Math.ceil((dashboard?.summary.total_events ?? 0) / 100));
 
   return (
     <div className="min-h-screen bg-[#050706] px-4 py-6 text-white sm:px-8">
@@ -1151,197 +755,302 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
           </p>
         ) : null}
 
-        {/* Visão geral */}
-        <Panel title="Visão geral">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Card title="Acessos" value={String(totals.views)} />
-            <Card title="Visitantes únicos" value={String(totals.uniques)} />
-            <Card title="Cliques no WhatsApp" value={String(totals.clicks)} />
-            <Card
-              title="Taxa de avanço"
-              value={pct(totals.rate)}
-              hint={`${totals.clickSessions} sessões com clique`}
-            />
-          </div>
-        </Panel>
-
-        {empty ? (
-          <p className="rounded-xl border border-white/10 bg-[#0B100D] p-6 text-center text-white/60">
-            Nenhum dado neste período.
+        {loading ? (
+          <p className="text-sm text-white/60" role="status">
+            Carregando métricas…
           </p>
         ) : null}
-
-        {/* SQUEEZE */}
-        {showSqueeze ? (
-          <Panel title="Squeeze (tráfego pago)">
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Card title="Acessos" value={String(squeezeTotals.views)} />
-              <Card title="Visitantes únicos" value={String(squeezeTotals.uniques)} />
-              <Card title="Cliques no WhatsApp" value={String(squeezeTotals.clicks)} />
-              <Card
-                title="Taxa de avanço"
-                value={pct(squeezeTotals.rate)}
-                hint={`${squeezeTotals.clickSessions} sessões com clique`}
-              />
-            </div>
-            <div className="mt-4 flex flex-col items-center gap-1 text-center">
-              <FunnelStep value={squeezeTotals.views} text="acessos" />
-              <span className="text-white/30">↓</span>
-              <FunnelStep value={squeezeTotals.uniques} text="visitantes únicos" />
-              <span className="text-white/30">↓</span>
-              <FunnelStep
-                value={squeezeTotals.clickSessions}
-                text="sessões que abriram o WhatsApp"
-              />
-            </div>
-          </Panel>
-        ) : null}
-
-        {/* CATÁLOGO */}
-        {showCatalog ? (
+        {dashboard && !loading && !loadError ? (
           <>
-            <Panel title="Catálogo digital">
+            {/* Visão geral */}
+            <Panel title="Visão geral">
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Card title="Acessos ao catálogo" value={String(catalogTotals.views)} />
-                <Card title="Visitantes únicos" value={String(catalogTotals.sessions)} />
+                <Card title="Acessos" value={String(totals.views)} />
+                <Card title="Visitantes únicos" value={String(totals.uniques)} />
+                <Card title="Cliques no WhatsApp" value={String(totals.clicks)} />
                 <Card
-                  title="Lotes visualizados"
-                  value={String(catalogTotals.lotViewsUnique)}
-                  hint={`${catalogTotals.lotViewsTotal} visualizações totais`}
-                />
-                <Card
-                  title="Lotes com interesse"
-                  value={String(catalogTotals.lotInterestUnique)}
-                  hint={`${catalogTotals.interestSessions} sessões interessadas`}
-                />
-                <Card
-                  title="Cliques no WhatsApp"
-                  value={String(catalogTotals.waClicks)}
-                  hint={`${catalogTotals.waSessions} sessões com clique`}
-                />
-                <Card
-                  title="Cliques em vídeos"
-                  value={String(catalogTotals.videos)}
-                  hint={`${catalogTotals.videoSessions} sessões`}
-                />
-                <Card title="Downloads do PDF" value={String(catalogTotals.pdfs)} />
-                <Card
-                  title="Taxa de interesse"
-                  value={pct(catalogTotals.interestRate)}
-                  hint={`Avanço p/ WhatsApp: ${pct(catalogTotals.advanceRate)}`}
+                  title="Taxa de avanço"
+                  value={pct(totals.rate)}
+                  hint={`${totals.clickSessions} sessões com clique`}
                 />
               </div>
             </Panel>
 
-            <Panel title="Funil do catálogo">
-              <div className="flex flex-col items-center gap-1 text-center">
-                <FunnelStep value={catalogFunnel.visitors} text="visitantes do catálogo" />
-                <span className="text-white/30">↓</span>
-                <FunnelStep
-                  value={catalogFunnel.viewedLot}
-                  text="visualizaram pelo menos um lote"
-                />
-                <p className="text-xs text-white/40">
-                  ({catalogFunnel.video} clicaram em pelo menos um vídeo — etapa opcional)
-                </p>
-                <span className="text-white/30">↓</span>
-                <FunnelStep value={catalogFunnel.interest} text="demonstraram interesse em lote" />
-                <span className="text-white/30">↓</span>
-                <FunnelStep value={catalogFunnel.whatsapp} text="abriram o WhatsApp" />
-                <p className="mt-2 text-sm font-semibold text-[#e0bd45]">
-                  Taxa de interesse: {pct(catalogTotals.interestRate)} · Avanço para WhatsApp:{" "}
-                  {pct(catalogTotals.advanceRate)}
-                </p>
-              </div>
-            </Panel>
+            {empty ? (
+              <p className="rounded-xl border border-white/10 bg-[#0B100D] p-6 text-center text-white/60">
+                Nenhum dado neste período.
+              </p>
+            ) : null}
 
-            <Panel title="Lotes mais visualizados">
-              <LotTable rows={lotsMostViewed} onOpen={setOpenLot} />
-            </Panel>
-
-            <Panel title="Lotes com maior interesse">
-              {lotsMostInterest.length ? (
-                <LotTable rows={lotsMostInterest} onOpen={setOpenLot} ranked />
-              ) : (
-                <p className="text-sm text-white/55">Nenhum interesse registrado neste período.</p>
-              )}
-            </Panel>
-
-            <Panel title="Desempenho por lote">
-              <div className="mb-3 flex flex-wrap gap-2 text-xs">
-                {(
-                  [
-                    ["uniqueViews", "Visualizações únicas"],
-                    ["totalViews", "Visualizações totais"],
-                    ["videoClicks", "Cliques de vídeo"],
-                    ["waClicks", "Cliques WhatsApp"],
-                    ["interested", "Interessados únicos"],
-                    ["rate", "Taxa de interesse"],
-                  ] as const
-                ).map(([key, text]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setSortKey(key)}
-                    className={`rounded-full border px-3 py-1 font-semibold transition ${
-                      sortKey === key
-                        ? "border-[#1c7a45] bg-[#1c7a45]/25 text-white"
-                        : "border-white/15 text-white/60"
-                    }`}
-                  >
-                    {text}
-                  </button>
-                ))}
-              </div>
-              <LotTable rows={lotsSorted} onOpen={setOpenLot} full />
-            </Panel>
-
-            <Panel title="Vídeos mais clicados">
-              {videosRanking.length ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[640px] text-left text-sm">
-                    <thead className="text-xs uppercase tracking-wide text-white/45">
-                      <tr>
-                        <th className="py-2 pr-3">Lote</th>
-                        <th className="py-2 pr-3">Animal</th>
-                        <th className="py-2 pr-3">Cliques no vídeo</th>
-                        <th className="py-2 pr-3">Sessões únicas</th>
-                        <th className="py-2">WhatsApp depois do vídeo</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {videosRanking.map((row) => (
-                        <tr key={row.key} className="border-t border-white/8 text-white/80">
-                          <td className="py-2 pr-3 font-semibold whitespace-nowrap">{row.key}</td>
-                          <td className="py-2 pr-3">{row.horse}</td>
-                          <td className="py-2 pr-3">{row.videoClicks}</td>
-                          <td className="py-2 pr-3">{row.videoSessions}</td>
-                          <td className="py-2 font-semibold text-[#3ddc84]">{row.videoThenWa}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {/* SQUEEZE */}
+            {showSqueeze ? (
+              <Panel title="Squeeze (tráfego pago)">
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                  <Card title="Acessos" value={String(squeezeTotals.views)} />
+                  <Card title="Visitantes únicos" value={String(squeezeTotals.uniques)} />
+                  <Card title="Cliques no WhatsApp" value={String(squeezeTotals.clicks)} />
+                  <Card
+                    title="Taxa de avanço"
+                    value={pct(squeezeTotals.rate)}
+                    hint={`${squeezeTotals.clickSessions} sessões com clique`}
+                  />
                 </div>
-              ) : (
-                <p className="text-sm text-white/55">Nenhum clique em vídeo neste período.</p>
-              )}
+                <div className="mt-4 flex flex-col items-center gap-1 text-center">
+                  <FunnelStep value={squeezeTotals.views} text="acessos" />
+                  <span className="text-white/30">↓</span>
+                  <FunnelStep value={squeezeTotals.uniques} text="visitantes únicos" />
+                  <span className="text-white/30">↓</span>
+                  <FunnelStep
+                    value={squeezeTotals.clickSessions}
+                    text="sessões que abriram o WhatsApp"
+                  />
+                </div>
+              </Panel>
+            ) : null}
+
+            {/* CATÁLOGO */}
+            {showCatalog ? (
+              <>
+                <Panel title="Catálogo digital">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <Card title="Acessos ao catálogo" value={String(catalogTotals.views)} />
+                    <Card title="Visitantes únicos" value={String(catalogTotals.sessions)} />
+                    <Card
+                      title="Lotes visualizados"
+                      value={String(catalogTotals.lotViewsUnique)}
+                      hint={`${catalogTotals.lotViewsTotal} visualizações totais`}
+                    />
+                    <Card
+                      title="Lotes com interesse"
+                      value={String(catalogTotals.lotInterestUnique)}
+                      hint={`${catalogTotals.interestSessions} sessões interessadas`}
+                    />
+                    <Card
+                      title="Cliques no WhatsApp"
+                      value={String(catalogTotals.waClicks)}
+                      hint={`${catalogTotals.waSessions} sessões com clique`}
+                    />
+                    <Card
+                      title="Cliques em vídeos"
+                      value={String(catalogTotals.videos)}
+                      hint={`${catalogTotals.videoSessions} sessões`}
+                    />
+                    <Card title="Downloads do PDF" value={String(catalogTotals.pdfs)} />
+                    <Card
+                      title="Taxa de interesse"
+                      value={pct(catalogTotals.interestRate)}
+                      hint={`Avanço p/ WhatsApp: ${pct(catalogTotals.advanceRate)}`}
+                    />
+                  </div>
+                </Panel>
+
+                <Panel title="Funil do catálogo">
+                  <div className="flex flex-col items-center gap-1 text-center">
+                    <FunnelStep value={catalogFunnel.visitors} text="visitantes do catálogo" />
+                    <span className="text-white/30">↓</span>
+                    <FunnelStep
+                      value={catalogFunnel.viewedLot}
+                      text="visualizaram pelo menos um lote"
+                    />
+                    <p className="text-xs text-white/40">
+                      ({catalogFunnel.video} clicaram em pelo menos um vídeo — etapa opcional)
+                    </p>
+                    <span className="text-white/30">↓</span>
+                    <FunnelStep
+                      value={catalogFunnel.interest}
+                      text="demonstraram interesse em lote"
+                    />
+                    <span className="text-white/30">↓</span>
+                    <FunnelStep value={catalogFunnel.whatsapp} text="abriram o WhatsApp" />
+                    <p className="mt-2 text-sm font-semibold text-[#e0bd45]">
+                      Taxa de interesse: {pct(catalogTotals.interestRate)} · Avanço para WhatsApp:{" "}
+                      {pct(catalogTotals.advanceRate)}
+                    </p>
+                  </div>
+                </Panel>
+
+                <Panel title="Lotes mais visualizados">
+                  <LotTable rows={lotsMostViewed} onOpen={setOpenLot} />
+                </Panel>
+
+                <Panel title="Lotes com maior interesse">
+                  {lotsMostInterest.length ? (
+                    <LotTable rows={lotsMostInterest} onOpen={setOpenLot} ranked />
+                  ) : (
+                    <p className="text-sm text-white/55">
+                      Nenhum interesse registrado neste período.
+                    </p>
+                  )}
+                </Panel>
+
+                <Panel title="Desempenho por lote">
+                  <div className="mb-3 flex flex-wrap gap-2 text-xs">
+                    {(
+                      [
+                        ["uniqueViews", "Visualizações únicas"],
+                        ["totalViews", "Visualizações totais"],
+                        ["videoClicks", "Cliques de vídeo"],
+                        ["waClicks", "Cliques WhatsApp"],
+                        ["interested", "Interessados únicos"],
+                        ["rate", "Taxa de interesse"],
+                      ] as const
+                    ).map(([key, text]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSortKey(key)}
+                        className={`rounded-full border px-3 py-1 font-semibold transition ${
+                          sortKey === key
+                            ? "border-[#1c7a45] bg-[#1c7a45]/25 text-white"
+                            : "border-white/15 text-white/60"
+                        }`}
+                      >
+                        {text}
+                      </button>
+                    ))}
+                  </div>
+                  <LotTable rows={lotsSorted} onOpen={setOpenLot} full />
+                </Panel>
+
+                <Panel title="Vídeos mais clicados">
+                  {videosRanking.length ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[640px] text-left text-sm">
+                        <thead className="text-xs uppercase tracking-wide text-white/45">
+                          <tr>
+                            <th className="py-2 pr-3">Lote</th>
+                            <th className="py-2 pr-3">Animal</th>
+                            <th className="py-2 pr-3">Cliques no vídeo</th>
+                            <th className="py-2 pr-3">Sessões únicas</th>
+                            <th className="py-2">WhatsApp depois do vídeo</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {videosRanking.map((row) => (
+                            <tr key={row.key} className="border-t border-white/8 text-white/80">
+                              <td className="py-2 pr-3 font-semibold whitespace-nowrap">
+                                {row.key}
+                              </td>
+                              <td className="py-2 pr-3">{row.horse}</td>
+                              <td className="py-2 pr-3">{row.videoClicks}</td>
+                              <td className="py-2 pr-3">{row.videoSessions}</td>
+                              <td className="py-2 font-semibold text-[#3ddc84]">
+                                {row.videoThenWa}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-white/55">Nenhum clique em vídeo neste período.</p>
+                  )}
+                </Panel>
+
+                <Panel title="Origens do catálogo">
+                  <CatalogStatsTable rows={catalogBySource} firstColumn="Origem" />
+                </Panel>
+
+                <Panel title="Campanhas do catálogo">
+                  <CatalogStatsTable
+                    rows={catalogByCampaign.filter((r) => matchesSearch(r.key))}
+                    firstColumn="Campanha"
+                  />
+                </Panel>
+
+                <Panel title="Desempenho do catálogo por dia">
+                  <div className="h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={catalogDaily}>
+                        <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+                        <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" fontSize={12} />
+                        <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} allowDecimals={false} />
+                        <Tooltip
+                          contentStyle={{
+                            background: "#0B100D",
+                            border: "1px solid rgba(255,255,255,0.15)",
+                            borderRadius: 12,
+                            color: "#fff",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="visitantes"
+                          name="Visitantes"
+                          fill="#1c7a45"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="lotes"
+                          name="Lotes visualizados"
+                          fill="#2f9d63"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="interesses"
+                          name="Interesses em lotes"
+                          fill="#e0bd45"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="whatsapp"
+                          name="Cliques WhatsApp"
+                          fill="#3ddc84"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Panel>
+              </>
+            ) : null}
+
+            {/* Busca de campanhas */}
+            <div>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar campanha, conjunto ou criativo…"
+                className="w-full rounded-xl border border-white/15 bg-[#0B100D] px-4 py-2.5 text-sm text-white placeholder:text-white/40"
+              />
+            </div>
+
+            <Panel title="Acessos por origem">
+              <StatsTable rows={bySource} firstColumn="Origem" />
             </Panel>
 
-            <Panel title="Origens do catálogo">
-              <CatalogStatsTable rows={catalogBySource} firstColumn="Origem" />
+            <Panel title="Origem do tráfego (utm_source)">
+              <StatsTable
+                rows={byUtmSource.filter((r) => matchesSearch(r.key))}
+                firstColumn="utm_source"
+              />
             </Panel>
 
-            <Panel title="Campanhas do catálogo">
-              <CatalogStatsTable
-                rows={catalogByCampaign.filter((r) => matchesSearch(r.key))}
+            <Panel title="Desempenho por campanha">
+              <StatsTable
+                rows={byCampaign.filter((r) => matchesSearch(r.key))}
                 firstColumn="Campanha"
               />
             </Panel>
 
-            <Panel title="Desempenho do catálogo por dia">
+            <Panel title="Desempenho por conjunto / público">
+              <StatsTable
+                rows={byTerm.filter((r) => matchesSearch(r.key))}
+                firstColumn="Conjunto / Público"
+              />
+            </Panel>
+
+            <Panel title="Desempenho por criativo">
+              <StatsTable
+                rows={byContent.filter((r) => matchesSearch(r.key))}
+                firstColumn="Criativo"
+              />
+            </Panel>
+
+            <Panel title="Acessos e cliques por dia">
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={catalogDaily}>
+                  <BarChart data={daily}>
                     <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
                     <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" fontSize={12} />
                     <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} allowDecimals={false} />
@@ -1354,110 +1063,36 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
                       }}
                     />
                     <Legend />
+                    <Bar dataKey="acessos" name="Acessos" fill="#1c7a45" radius={[4, 4, 0, 0]} />
                     <Bar
-                      dataKey="visitantes"
-                      name="Visitantes"
-                      fill="#1c7a45"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="lotes"
-                      name="Lotes visualizados"
-                      fill="#2f9d63"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="interesses"
-                      name="Interesses em lotes"
+                      dataKey="cliques"
+                      name="Cliques no WhatsApp"
                       fill="#e0bd45"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="whatsapp"
-                      name="Cliques WhatsApp"
-                      fill="#3ddc84"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </Panel>
+
+            <Panel title="IDs do Meta (diagnóstico)">
+              <StatsTable rows={metaIds} firstColumn="campaign_id / adset_id / ad_id" />
+            </Panel>
+
+            {/* Eventos recentes */}
           </>
         ) : null}
-
-        {/* Busca de campanhas */}
-        <div>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar campanha, conjunto ou criativo…"
-            className="w-full rounded-xl border border-white/15 bg-[#0B100D] px-4 py-2.5 text-sm text-white placeholder:text-white/40"
-          />
-        </div>
-
-        <Panel title="Acessos por origem">
-          <StatsTable rows={bySource} firstColumn="Origem" />
-        </Panel>
-
-        <Panel title="Origem do tráfego (utm_source)">
-          <StatsTable
-            rows={byUtmSource.filter((r) => matchesSearch(r.key))}
-            firstColumn="utm_source"
-          />
-        </Panel>
-
-        <Panel title="Desempenho por campanha">
-          <StatsTable
-            rows={byCampaign.filter((r) => matchesSearch(r.key))}
-            firstColumn="Campanha"
-          />
-        </Panel>
-
-        <Panel title="Desempenho por conjunto / público">
-          <StatsTable
-            rows={byTerm.filter((r) => matchesSearch(r.key))}
-            firstColumn="Conjunto / Público"
-          />
-        </Panel>
-
-        <Panel title="Desempenho por criativo">
-          <StatsTable rows={byContent.filter((r) => matchesSearch(r.key))} firstColumn="Criativo" />
-        </Panel>
-
-        <Panel title="Acessos e cliques por dia">
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={daily}>
-                <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-                <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" fontSize={12} />
-                <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{
-                    background: "#0B100D",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: 12,
-                    color: "#fff",
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="acessos" name="Acessos" fill="#1c7a45" radius={[4, 4, 0, 0]} />
-                <Bar
-                  dataKey="cliques"
-                  name="Cliques no WhatsApp"
-                  fill="#e0bd45"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Panel>
-
-        <Panel title="IDs do Meta (diagnóstico)">
-          <StatsTable rows={metaIds} firstColumn="campaign_id / adset_id / ad_id" />
-        </Panel>
-
-        {/* Eventos recentes */}
         <Panel title="Eventos recentes">
+          {eventsLoading ? (
+            <p className="mb-3 text-sm text-white/60" role="status">
+              Carregando eventos…
+            </p>
+          ) : null}
+          {eventsError ? (
+            <p className="mb-3 text-sm text-red-300" role="alert">
+              {eventsError}
+            </p>
+          ) : null}
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-white/45">
@@ -1508,26 +1143,26 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
               </tbody>
             </table>
           </div>
-          {filtered.length === 0 ? (
+          {pageRows.length === 0 && !eventsLoading && !eventsError ? (
             <p className="mt-3 text-sm text-white/55">Nenhum dado neste período.</p>
           ) : (
             <div className="mt-3 flex items-center justify-between text-sm text-white/60">
               <span>
-                {filtered.length} eventos · página {page + 1} de {pageCount}
+                {dashboard?.summary.total_events ?? "—"} eventos · página {page + 1} de {pageCount}
               </span>
               <div className="flex gap-2">
                 <button
                   type="button"
-                  disabled={page === 0}
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0 || eventsLoading}
+                  onClick={() => void changeEventsPage(page - 1)}
                   className="rounded-lg border border-white/15 px-3 py-1 font-semibold disabled:opacity-40"
                 >
                   Anterior
                 </button>
                 <button
                   type="button"
-                  disabled={page + 1 >= pageCount}
-                  onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                  disabled={!recentEvents?.hasMore || eventsLoading}
+                  onClick={() => void changeEventsPage(page + 1)}
                   className="rounded-lg border border-white/15 px-3 py-1 font-semibold disabled:opacity-40"
                 >
                   Próxima
@@ -1541,6 +1176,16 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
       {lotDetail ? <LotDetail lot={lotDetail} onClose={() => setOpenLot(null)} /> : null}
       {timelineSession ? (
         <Drawer title="Sequência da sessão (anônima)" onClose={() => setTimelineSession(null)}>
+          {timelineLoading ? (
+            <p className="mb-3 text-sm text-white/60" role="status">
+              Carregando sessão…
+            </p>
+          ) : null}
+          {timelineError ? (
+            <p className="mb-3 text-sm text-red-300" role="alert">
+              {timelineError}
+            </p>
+          ) : null}
           <ul className="space-y-2 text-sm">
             {timelineRows.map((row) => (
               <li key={row.id} className="flex gap-3 text-white/75">
@@ -1558,10 +1203,28 @@ function Dashboard({ onSignedOut }: { onSignedOut: () => void }) {
                 </span>
               </li>
             ))}
-            {timelineRows.length === 0 ? (
+            {timelineRows.length === 0 && !timelineLoading && !timelineError ? (
               <li className="text-white/55">Nenhum evento nesta sessão.</li>
             ) : null}
           </ul>
+          <div className="mt-4 flex gap-2 text-sm">
+            <button
+              type="button"
+              disabled={timelineIndex === 0 || timelineLoading}
+              onClick={() => void changeTimelinePage(timelineIndex - 1)}
+              className="rounded-lg border border-white/15 px-3 py-1 disabled:opacity-40"
+            >
+              Mais recentes
+            </button>
+            <button
+              type="button"
+              disabled={!timelinePage?.hasMore || timelineLoading}
+              onClick={() => void changeTimelinePage(timelineIndex + 1)}
+              className="rounded-lg border border-white/15 px-3 py-1 disabled:opacity-40"
+            >
+              Mais antigos
+            </button>
+          </div>
         </Drawer>
       ) : null}
     </div>

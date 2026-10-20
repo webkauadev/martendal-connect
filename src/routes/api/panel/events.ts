@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { parsePanelQuery, PanelInputError } from "@/lib/panel-data";
+import { streamPanelCsv } from "@/lib/panel-csv-server";
 
 import {
-  getPanelTrackingEvents,
+  getPanelTrackingEventsPage,
   panelJson,
   panelSessionIsValid,
   readPanelSessionCookie,
@@ -26,13 +28,25 @@ export const Route = createFileRoute("/api/panel/events")({
             return panelJson({ ok: false }, 401);
           }
 
-          const events = await getPanelTrackingEvents(hash);
-
+          const { filters, cursor, pageSize, csv } = parsePanelQuery(
+            new URL(request.url).searchParams,
+            true,
+          );
+          const page = await getPanelTrackingEventsPage(
+            hash,
+            cursor?.created_at ?? null,
+            cursor?.id ?? null,
+            pageSize,
+            filters,
+          );
+          if (csv) return streamPanelCsv(request, hash, filters, page);
           return panelJson({
             ok: true,
-            events,
+            ...page,
           });
-        } catch {
+        } catch (error) {
+          if (error instanceof PanelInputError)
+            return panelJson({ ok: false, error: error.message }, 400);
           return panelJson(
             {
               ok: false,

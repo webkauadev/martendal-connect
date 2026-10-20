@@ -1,6 +1,7 @@
 import { createHash, createHmac, createPublicKey, randomBytes, verify } from "node:crypto";
 
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "@/integrations/supabase/config";
+import type { Dashboard, DashboardFilters, EventPage } from "@/lib/panel-auth";
 
 const PANEL_AUDIENCE = "martendal-leads-panel";
 const TOKEN_VERSION = "mk1";
@@ -259,10 +260,28 @@ export async function panelSessionIsValid(sessionHashValue: string): Promise<boo
   return result.valid === true;
 }
 
-export async function getPanelTrackingEvents(sessionHashValue: string): Promise<unknown[]> {
-  return rpc<unknown[]>("panel_v2_get_tracking_events", {
+export async function getPanelDashboard(sessionHashValue: string, filters: DashboardFilters) {
+  return rpc<Dashboard>("panel_v2_get_dashboard", {
     p_broker_secret: brokerSecret(),
     p_session_hash: sessionHashValue,
+    p_filters: filters,
+  });
+}
+
+export async function getPanelTrackingEventsPage(
+  sessionHashValue: string,
+  cursorAt: string | null,
+  cursorId: string | null,
+  pageSize = 100,
+  filters: DashboardFilters = {},
+) {
+  return rpc<EventPage>("panel_v2_get_tracking_events_page", {
+    p_broker_secret: brokerSecret(),
+    p_session_hash: sessionHashValue,
+    p_cursor_at: cursorAt,
+    p_cursor_id: cursorId,
+    p_page_size: pageSize,
+    p_filters: filters,
   });
 }
 
